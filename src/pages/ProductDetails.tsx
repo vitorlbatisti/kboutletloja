@@ -35,44 +35,49 @@ export const ProductDetails = () => {
   };
 
   if (loading) return (
-    <div className="max-w-7xl mx-auto px-4 pt-32 pb-20 animate-pulse">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="aspect-[3/4] bg-zinc-900 rounded-3xl" />
-        <div className="space-y-6">
-          <div className="h-10 bg-zinc-900 rounded w-3/4" />
-          <div className="h-6 bg-zinc-900 rounded w-1/4" />
-          <div className="h-32 bg-zinc-900 rounded" />
+    <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 animate-pulse">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+        <div className="aspect-[4/5] bg-zinc-950 rounded-[3rem] border border-white/5" />
+        <div className="space-y-8">
+          <div className="h-16 bg-zinc-950 rounded-2xl w-3/4" />
+          <div className="h-8 bg-zinc-950 rounded-xl w-1/4" />
+          <div className="h-40 bg-zinc-950 rounded-3xl" />
         </div>
       </div>
     </div>
   );
 
   if (!product) return (
-    <div className="max-w-7xl mx-auto px-4 pt-32 pb-20 text-center">
-      <h2 className="text-2xl font-bold">Produto não encontrado</h2>
-      <button onClick={() => navigate('/catalogo')} className="mt-4 text-zinc-400 hover:text-white">Voltar ao catálogo</button>
+    <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 text-center">
+      <h2 className="text-4xl font-bold tracking-tighter mb-8">Produto não encontrado</h2>
+      <button 
+        onClick={() => navigate('/catalogo')} 
+        className="px-8 py-3 bg-white text-black rounded-full font-bold hover:bg-zinc-200 transition-all"
+      >
+        Voltar ao Catálogo
+      </button>
     </div>
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-32 pb-20">
+    <div className="max-w-7xl mx-auto px-6 pt-40 pb-32">
       <button 
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white mb-8 transition-colors"
+        className="group flex items-center gap-3 text-zinc-500 hover:text-white mb-12 transition-all font-bold uppercase tracking-widest text-xs"
       >
-        <ArrowLeft size={20} /> Voltar
+        <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Voltar
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="aspect-[3/4] rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800"
+          className="aspect-[4/5] rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl"
         >
           <img 
             src={product.imagem_url} 
             alt={product.nome} 
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
           />
         </motion.div>
 
@@ -81,24 +86,29 @@ export const ProductDetails = () => {
           animate={{ opacity: 1, x: 0 }}
           className="flex flex-col"
         >
-          <h1 className="text-4xl font-bold tracking-tight mb-2">{product.nome}</h1>
-          <p className="text-2xl font-bold text-white mb-6">R$ {product.preco.toFixed(2)}</p>
+          <div className="mb-10">
+            <span className="inline-block px-4 py-1.5 bg-white/5 border border-white/5 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-6 text-zinc-500">
+              Disponível em Estoque
+            </span>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter-extra mb-4 leading-tight">{product.nome}</h1>
+            <p className="text-3xl font-bold text-white tracking-tighter">R$ {product.preco.toFixed(2)}</p>
+          </div>
           
-          <div className="prose prose-invert max-w-none mb-8">
-            <p className="text-zinc-400 leading-relaxed">{product.descricao}</p>
+          <div className="prose prose-invert max-w-none mb-12">
+            <p className="text-zinc-400 text-lg leading-relaxed font-medium">{product.descricao}</p>
           </div>
 
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">Tamanho</h3>
-            <div className="flex flex-wrap gap-3">
+          <div className="mb-12">
+            <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 mb-6">Selecione o Tamanho</h3>
+            <div className="flex flex-wrap gap-4">
               {product.tamanhos?.map(size => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`min-w-[48px] h-12 flex items-center justify-center rounded-xl border font-bold transition-all ${
+                  className={`min-w-[64px] h-16 flex items-center justify-center rounded-2xl border-2 font-black transition-all duration-300 ${
                     selectedSize === size 
-                      ? 'bg-white text-black border-white' 
-                      : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-500'
+                      ? 'bg-white text-black border-white shadow-xl scale-105' 
+                      : 'bg-zinc-950 text-zinc-500 border-white/5 hover:border-white/20'
                   }`}
                 >
                   {size}
@@ -110,26 +120,27 @@ export const ProductDetails = () => {
           <button
             onClick={handleAddToCart}
             disabled={added}
-            className={`w-full py-5 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all btn-glow ${
-              added ? 'bg-emerald-500 text-white' : 'bg-white text-black hover:bg-zinc-200'
+            className={`w-full py-6 rounded-[2rem] font-black text-lg uppercase tracking-widest flex items-center justify-center gap-4 transition-all duration-500 shadow-2xl ${
+              added ? 'bg-emerald-500 text-white scale-95' : 'bg-white text-black hover:bg-zinc-200 hover:scale-[1.02] active:scale-[0.98]'
             }`}
           >
             {added ? (
               <>
-                <Check size={20} /> Adicionado à Sacola
+                <Check size={24} /> Adicionado
               </>
             ) : (
               <>
-                <ShoppingBag size={20} /> Adicionar à Sacola
+                <ShoppingBag size={24} /> Adicionar à Sacola
               </>
             )}
           </button>
 
-          <div className="mt-12 p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800">
-            <h4 className="font-semibold mb-2">Informações de Entrega</h4>
-            <p className="text-sm text-zinc-500">
+          <div className="mt-16 p-10 bg-zinc-950 rounded-[2.5rem] border border-white/5">
+            <h4 className="font-bold text-lg mb-4 tracking-tight">Envio & Entrega</h4>
+            <p className="text-zinc-500 leading-relaxed font-medium">
               Enviamos para todo o Brasil via Correios ou Transportadora. 
-              Retirada em mãos disponível em Chapecó-SC.
+              Retirada em mãos disponível em Chapecó-SC. <br />
+              <span className="text-zinc-400 mt-2 block italic">Frete grátis em compras acima de R$ 500.</span>
             </p>
           </div>
         </motion.div>

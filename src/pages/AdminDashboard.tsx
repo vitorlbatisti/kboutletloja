@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Product, Category } from '../types';
+import { Product, Category, Order } from '../types';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'orders'>('products');
   const navigate = useNavigate();
 
   // Form states
@@ -29,7 +30,7 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     checkUser();
-    fetchData();
+    loadDashboardData();
   }, []);
 
   const checkUser = async () => {
@@ -37,15 +38,28 @@ export const AdminDashboard = () => {
     if (!user) navigate('/admin');
   };
 
-  const fetchData = async () => {
+  const loadDashboardData = async () => {
     setLoading(true);
-    const [prodRes, catRes] = await Promise.all([
-      supabase.from('produtos').select('*').order('created_at', { ascending: false }),
-      supabase.from('categorias').select('*').order('nome')
-    ]);
-    if (prodRes.data) setProducts(prodRes.data);
-    if (catRes.data) setCategories(catRes.data);
-    setLoading(false);
+    try {
+      const [prodRes, catRes, orderRes] = await Promise.all([
+        supabase.from('produtos').select('*').order('created_at', { ascending: false }),
+        supabase.from('categorias').select('*').order('nome'),
+        supabase.from('pedidos').select('*').order('created_at', { ascending: false })
+      ]);
+      
+      if (prodRes.error) throw new Error(`Erro ao carregar produtos: ${prodRes.error.message}`);
+      if (catRes.error) throw new Error(`Erro ao carregar categorias: ${catRes.error.message}`);
+      if (orderRes.error) throw new Error(`Erro ao carregar pedidos: ${orderRes.error.message}`);
+      
+      if (prodRes.data) setProducts(prodRes.data);
+      if (catRes.data) setCategories(catRes.data);
+      if (orderRes.data) setOrders(orderRes.data);
+    } catch (err: any) {
+      console.error('Erro ao carregar dados:', err);
+      alert(err.message || 'Erro inesperado ao carregar dados do dashboard.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -97,17 +111,12 @@ export const AdminDashboard = () => {
 
       console.log('Salvando produto:', payload);
 
-      let error;
       if (editingId) {
-        const res = await supabase.from('produtos').update(payload).eq('id', editingId);
-        error = res.error;
+        const { error } = await supabase.from('produtos').update(payload).eq('id', editingId);
+        if (error) throw error;
       } else {
-        const res = await supabase.from('produtos').insert([payload]);
-        error = res.error;
-      }
-
-      if (error) {
-        throw error;
+        const { error } = await supabase.from('produtos').insert([payload]);
+        if (error) throw error;
       }
       
       setIsModalOpen(false);
@@ -115,7 +124,7 @@ export const AdminDashboard = () => {
       setImageFile(null);
       setImagePreview(null);
       setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', categoria_id: '' });
-      fetchData();
+      loadDashboardData();
     } catch (err: any) {
       console.error('Erro ao salvar produto:', err);
       alert(err.message || 'Erro ao salvar produto. Verifique o console.');
@@ -126,8 +135,14 @@ export const AdminDashboard = () => {
 
   const handleDeleteProduct = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
-      await supabase.from('produtos').delete().eq('id', id);
-      fetchData();
+      try {
+        const { error } = await supabase.from('produtos').delete().eq('id', id);
+        if (error) throw error;
+        loadDashboardData();
+      } catch (err: any) {
+        console.error('Erro ao excluir produto:', err);
+        alert('Erro ao excluir produto: ' + (err.message || 'Erro desconhecido'));
+      }
     }
   };
 
@@ -159,26 +174,52 @@ export const AdminDashboard = () => {
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCatId) {
-      await supabase.from('categorias').update(catFormData).eq('id', editingCatId);
-    } else {
-      await supabase.from('categorias').insert([catFormData]);
+    try {
+      if (editingCatId) {
+        const { error } = await supabase.from('categorias').update(catFormData).eq('id', editingCatId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('categorias').insert([catFormData]);
+        if (error) throw error;
+      }
+      setIsCatModalOpen(false);
+      setEditingCatId(null);
+      setCatFormData({ nome: '' });
+      loadDashboardData();
+    } catch (err: any) {
+      alert('Erro ao salvar categoria: ' + err.message);
     }
-    setIsCatModalOpen(false);
-    setEditingCatId(null);
-    setCatFormData({ nome: '' });
-    fetchData();
   };
 
   const handleDeleteCategory = async (id: string) => {
     if (confirm('Tem certeza? Isso pode afetar produtos vinculados.')) {
-      await supabase.from('categorias').delete().eq('id', id);
-      fetchData();
+      try {
+        const { error } = await supabase.from('categorias').delete().eq('id', id);
+        if (error) throw error;
+        loadDashboardData();
+      } catch (err: any) {
+        console.error('Erro ao excluir categoria:', err);
+        alert('Erro ao excluir categoria: ' + (err.message || 'Erro desconhecido'));
+      }
+    }
+  };
+
+  const handleUpdateOrderStatus = async (id: string, status: Order['status']) => {
+    try {
+      const { error } = await supabase.from('pedidos').update({ status }).eq('id', id);
+      if (error) throw error;
+      loadDashboardData();
+    } catch (err: any) {
+      alert('Erro ao atualizar status: ' + err.message);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-24 pb-20">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-7xl mx-auto px-4 pt-24 pb-20"
+    >
       <div className="flex justify-between items-center mb-12">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
@@ -207,6 +248,13 @@ export const AdminDashboard = () => {
           </div>
           <p className="text-3xl font-bold">{categories.length}</p>
         </div>
+        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 bg-white/5 rounded-xl text-white"><ShoppingCart size={24} /></div>
+            <span className="text-zinc-400 font-medium">Pedidos</span>
+          </div>
+          <p className="text-3xl font-bold">{orders.length}</p>
+        </div>
       </div>
 
       <div className="flex gap-4 mb-8">
@@ -221,6 +269,12 @@ export const AdminDashboard = () => {
           className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'categories' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
         >
           Categorias
+        </button>
+        <button 
+          onClick={() => setActiveTab('orders')}
+          className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'orders' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+        >
+          Pedidos
         </button>
       </div>
 
@@ -271,7 +325,7 @@ export const AdminDashboard = () => {
             </table>
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'categories' ? (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Lista de Categorias</h2>
@@ -299,6 +353,56 @@ export const AdminDashboard = () => {
                       <div className="flex justify-end gap-2">
                         <button onClick={() => { setEditingCatId(c.id); setCatFormData({ nome: c.nome }); setIsCatModalOpen(true); }} className="p-2 hover:text-white text-zinc-500 transition-colors"><Edit2 size={18} /></button>
                         <button onClick={() => handleDeleteCategory(c.id)} className="p-2 hover:text-red-500 text-zinc-500 transition-colors"><Trash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Lista de Pedidos</h2>
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-zinc-800 text-zinc-500 text-sm">
+                  <th className="px-6 py-4 font-medium">Cliente</th>
+                  <th className="px-6 py-4 font-medium">Itens</th>
+                  <th className="px-6 py-4 font-medium">Total</th>
+                  <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800">
+                {orders.map(o => (
+                  <tr key={o.id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{o.cliente_nome}</div>
+                      <div className="text-xs text-zinc-500">{o.cliente_whatsapp}</div>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-400 text-sm">
+                      {o.itens.map((item, idx) => (
+                        <div key={idx}>{item.quantity}x {item.nome} ({item.selectedSize})</div>
+                      ))}
+                    </td>
+                    <td className="px-6 py-4 font-bold">R$ {o.total.toFixed(2)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        o.status === 'pendente' ? 'bg-amber-500/10 text-amber-500' :
+                        o.status === 'pago' ? 'bg-emerald-500/10 text-emerald-500' :
+                        o.status === 'enviado' ? 'bg-blue-500/10 text-blue-500' :
+                        'bg-red-500/10 text-red-500'
+                      }`}>
+                        {o.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleUpdateOrderStatus(o.id, 'pago')} title="Marcar como Pago" className="p-2 hover:text-emerald-500 text-zinc-500 transition-colors"><CheckCircle size={18} /></button>
+                        <button onClick={() => handleUpdateOrderStatus(o.id, 'enviado')} title="Marcar como Enviado" className="p-2 hover:text-blue-500 text-zinc-500 transition-colors"><Truck size={18} /></button>
+                        <button onClick={() => handleUpdateOrderStatus(o.id, 'cancelado')} title="Cancelar" className="p-2 hover:text-red-500 text-zinc-500 transition-colors"><XCircle size={18} /></button>
                       </div>
                     </td>
                   </tr>
@@ -411,6 +515,6 @@ export const AdminDashboard = () => {
           </motion.div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
