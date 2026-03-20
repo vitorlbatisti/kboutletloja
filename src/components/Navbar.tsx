@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Instagram, User, Menu, X } from 'lucide-react';
@@ -9,6 +10,7 @@ export const Navbar = ({ onOpenCart }: { onOpenCart: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const location = useLocation();
+  const pathname = location.pathname;
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -24,9 +26,9 @@ export const Navbar = ({ onOpenCart }: { onOpenCart: () => void }) => {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2' : 'py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className={`flex justify-between items-center h-16 px-8 rounded-full transition-all duration-500 glass-effect shadow-2xl border border-white/10`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2' : 'py-4'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className={`flex justify-between items-center h-16 px-4 sm:px-8 rounded-full transition-all duration-500 ${isScrolled ? 'glass-effect shadow-2xl border-white/10' : 'bg-transparent border-transparent'} border`}>
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-black tracking-tighter text-white">
               KB<span className="text-zinc-500">OUTLET</span>
@@ -41,7 +43,7 @@ export const Navbar = ({ onOpenCart }: { onOpenCart: () => void }) => {
                   key={link.path}
                   to={link.path}
                   className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-all hover:text-white ${
-                    location.pathname === link.path ? 'text-white' : 'text-zinc-500'
+                    pathname === link.path ? 'text-white' : 'text-zinc-500'
                   }`}
                 >
                   {link.name}

@@ -18,7 +18,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     setIsSubmitting(true);
     try {
       // 1. Save to Supabase
-      const { error } = await supabase.from('pedidos').insert([{
+      const { error } = await supabase.from('pedidos_v1').insert([{
         cliente_nome: customerName,
         cliente_whatsapp: 'Via WhatsApp Web',
         itens: cart,
@@ -64,27 +64,27 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-black z-[70] shadow-[0_0_100px_rgba(0,0,0,0.8)] border-l border-white/5 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-black z-[70] shadow-[0_0_100px_rgba(0,0,0,0.8)] border-l border-white/5 flex flex-col"
           >
-            <div className="p-10 border-b border-white/5 flex justify-between items-center">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-black tracking-tighter flex items-center gap-3">
-                  <ShoppingBag size={24} className="text-zinc-500" />
+                <h2 className="text-xl font-black tracking-tighter flex items-center gap-3">
+                  <ShoppingBag size={20} className="text-zinc-500" />
                   SUA SACOLA
                 </h2>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold mt-1">
+                <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-bold mt-1">
                   {cart.length} {cart.length === 1 ? 'Item' : 'Itens'} selecionados
                 </p>
               </div>
               <button 
                 onClick={onClose} 
-                className="p-3 hover:bg-white/5 rounded-full transition-all text-zinc-500 hover:text-white"
+                className="p-2 hover:bg-white/5 rounded-full transition-all text-zinc-500 hover:text-white"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-10 space-y-10">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-zinc-700 space-y-6">
                   <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center">
@@ -105,19 +105,19 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     key={`${item.id}-${item.selectedSize}`} 
-                    className="flex gap-6 group relative"
+                    className="flex gap-4 group relative"
                   >
-                    <div className="w-24 h-32 bg-zinc-950 rounded-2xl overflow-hidden flex-shrink-0 border border-white/5">
+                    <div className="w-16 h-20 bg-zinc-950 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
                       <img src={item.imagem_url} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     </div>
-                    <div className="flex-1 flex flex-col justify-between py-1">
+                    <div className="flex-1 flex flex-col justify-between py-0.5">
                       <div>
-                        <h3 className="font-bold text-white tracking-tight text-lg line-clamp-1">{item.nome}</h3>
-                        <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mt-1">Tamanho: {item.selectedSize}</p>
-                        <p className="text-lg font-black mt-2 tracking-tighter">R$ {item.preco.toFixed(2)}</p>
+                        <h3 className="font-bold text-white tracking-tight text-sm line-clamp-1">{item.nome}</h3>
+                        <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold mt-0.5">Tamanho: {item.selectedSize}</p>
+                        <p className="text-base font-black mt-1 tracking-tighter">R$ {item.preco.toFixed(2)}</p>
                       </div>
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center bg-zinc-950 border border-white/5 rounded-full px-2 py-1">
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center bg-zinc-950 border border-white/5 rounded-full px-1.5 py-0.5">
                           <button 
                             onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
@@ -146,31 +146,31 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             </div>
 
             {cart.length > 0 && (
-              <div className="p-10 border-t border-white/5 bg-black/50 backdrop-blur-xl space-y-8">
-                <div className="space-y-4">
-                  <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold">Seu Nome</label>
+              <div className="p-6 border-t border-white/5 bg-black/50 backdrop-blur-xl space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-bold">Seu Nome</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
                     <input 
                       type="text" 
                       placeholder="Como podemos te chamar?"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full pl-12 pr-6 py-4 bg-zinc-950 border border-white/5 rounded-2xl focus:outline-none focus:border-white/20 transition-all text-sm font-medium placeholder:text-zinc-800"
+                      className="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-white/5 rounded-xl focus:outline-none focus:border-white/20 transition-all text-xs font-medium placeholder:text-zinc-800"
                     />
                   </div>
                 </div>
 
                 <div className="flex justify-between items-end">
-                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600">Subtotal</span>
-                  <span className="text-3xl font-black tracking-tighter">R$ {totalPrice.toFixed(2)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">Subtotal</span>
+                  <span className="text-2xl font-black tracking-tighter">R$ {totalPrice.toFixed(2)}</span>
                 </div>
                 <button
                   onClick={handleCheckout}
                   disabled={isSubmitting}
-                  className="w-full py-6 bg-white text-black font-black uppercase tracking-[0.2em] rounded-[2rem] flex items-center justify-center gap-4 hover:bg-zinc-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 disabled:opacity-50"
+                  className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all shadow-[0_10px_20px_rgba(255,255,255,0.05)] active:scale-95 disabled:opacity-50 text-sm"
                 >
-                  <Send size={20} />
+                  <Send size={18} />
                   {isSubmitting ? 'Processando...' : 'Finalizar Pedido'}
                 </button>
                 <p className="text-[10px] text-center text-zinc-600 font-bold uppercase tracking-widest">

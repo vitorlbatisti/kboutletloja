@@ -1,6 +1,7 @@
 export interface Category {
   id: string;
   nome: string;
+  imagem_url?: string;
   created_at?: string;
 }
 
@@ -12,6 +13,7 @@ export interface Product {
   tamanhos: string[]; // Store as array of strings
   imagem_url: string;
   categoria_id: string;
+  destaque: boolean;
   created_at?: string;
 }
 

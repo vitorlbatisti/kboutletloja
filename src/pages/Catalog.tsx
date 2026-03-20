@@ -16,6 +16,8 @@ export const Catalog = () => {
 
   const activeCategory = searchParams.get('categoria') || 'all';
 
+  const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
+
   useEffect(() => {
     const fetchCategories = async () => {
       const { data } = await supabase.from('categorias').select('*');
@@ -33,12 +35,18 @@ export const Catalog = () => {
         query = query.eq('categoria_id', activeCategory);
       }
       
-      const { data } = await query.order('created_at', { ascending: false });
-      if (data) setProducts(data);
+      const { data } = await query;
+      if (data) {
+        let sorted = [...data];
+        if (sortBy === 'newest') sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        if (sortBy === 'price-asc') sorted.sort((a, b) => a.preco - b.preco);
+        if (sortBy === 'price-desc') sorted.sort((a, b) => b.preco - a.preco);
+        setProducts(sorted);
+      }
       setLoading(false);
     };
     fetchProducts();
-  }, [activeCategory]);
+  }, [activeCategory, sortBy]);
 
   const filteredProducts = products.filter(p => 
     p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,7 +55,7 @@ export const Catalog = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-40 pb-32">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
         <div className="max-w-2xl">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -66,23 +74,42 @@ export const Catalog = () => {
           </motion.p>
         </div>
 
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative flex-1 md:w-80">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+          <div className="relative w-full sm:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
             <input
               type="text"
               placeholder="O que você procura?"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-6 py-4 bg-zinc-950 border border-white/5 rounded-full focus:outline-none focus:border-white/20 transition-all text-sm font-medium placeholder:text-zinc-700"
+              className="w-full pl-12 pr-12 py-4 bg-zinc-950 border border-white/5 rounded-full focus:outline-none focus:border-white/20 transition-all text-sm font-medium placeholder:text-zinc-700"
             />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`p-4 rounded-full border transition-all duration-500 ${showFilters ? 'bg-white text-black border-white shadow-xl' : 'bg-zinc-950 border-white/5 text-zinc-500 hover:text-white'}`}
-          >
-            <Filter size={20} />
-          </button>
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="flex-1 sm:w-48 px-6 py-4 bg-zinc-950 border border-white/5 rounded-full text-sm font-bold uppercase tracking-widest outline-none focus:border-white/20 transition-all appearance-none text-center"
+            >
+              <option value="newest">Novidades</option>
+              <option value="price-asc">Menor Preço</option>
+              <option value="price-desc">Maior Preço</option>
+            </select>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-4 rounded-full border transition-all duration-500 ${showFilters ? 'bg-white text-black border-white shadow-xl' : 'bg-zinc-950 border-white/5 text-zinc-500 hover:text-white'}`}
+            >
+              <Filter size={20} />
+            </button>
+          </div>
         </div>
       </div>
 

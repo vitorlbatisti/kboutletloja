@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, isAdmin } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { Lock, Mail } from 'lucide-react';
 
@@ -11,6 +11,17 @@ export const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log('Sessão ativa encontrada, redirecionando...');
+        navigate('/admin/dashboard');
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -18,19 +29,26 @@ export const AdminLogin = () => {
     console.log('Tentando login com:', email);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
       
-      if (error) {
-        console.error('Erro no Supabase Auth:', error.message);
-        setError(`Erro: ${error.message}`);
+      if (authError) {
+        console.error('Erro no Supabase Auth:', authError.message, authError);
+        setError(`Erro: ${authError.message}`);
         setLoading(false);
+      } else if (data.user) {
+        console.log('Login bem-sucedido:', data.user.email);
+        // Pequeno delay para garantir que o Supabase atualizou o estado local
+        setTimeout(() => {
+          navigate('/admin/dashboard');
+        }, 500);
       } else {
-        console.log('Login bem-sucedido:', data.user?.email);
-        navigate('/admin/dashboard');
+        console.error('Login retornou dados vazios');
+        setError('Erro ao obter dados do usuário.');
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Erro inesperado:', err);
-      setError('Ocorreu um erro inesperado ao tentar entrar.');
+    } catch (err: any) {
+      console.error('Erro inesperado no login:', err);
+      setError(`Erro inesperado: ${err.message || 'Erro desconhecido'}`);
       setLoading(false);
     }
   };

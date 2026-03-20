@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { ShoppingBag, ArrowLeft, Check } from 'lucide-react';
 
 export const ProductDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
@@ -16,6 +16,7 @@ export const ProductDetails = () => {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
+    if (!id) return;
     const fetchProduct = async () => {
       const { data } = await supabase.from('produtos').select('*').eq('id', id).single();
       if (data) {

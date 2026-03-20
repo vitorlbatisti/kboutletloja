@@ -20,6 +20,15 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
         
+        {product.destaque && (
+          <div className="absolute top-6 left-6 z-20 px-4 py-1.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full">
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+              Destaque
+            </span>
+          </div>
+        )}
+
         {/* Hover Action */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
           <span className="px-6 py-2 bg-white text-black text-sm font-bold rounded-full shadow-xl">

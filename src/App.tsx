@@ -10,6 +10,7 @@ import { Catalog } from './pages/Catalog';
 import { ProductDetails } from './pages/ProductDetails';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -45,7 +46,14 @@ export default function App() {
                 <Route path="/catalogo" element={<Catalog />} />
                 <Route path="/produto/:id" element={<ProductDetails />} />
                 <Route path="/admin" element={<AdminLogin />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route 
+                  path="/admin/dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
               </Routes>
             </PageWrapper>
           </main>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, ShoppingBag, Instagram } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types';
 import { ProductCard } from '../components/ProductCard';
@@ -14,30 +14,50 @@ export const Home = () => {
   useEffect(() => {
     const loadHomeData = async () => {
       const [prodRes, catRes] = await Promise.all([
-        supabase.from('produtos').select('*').limit(4).order('created_at', { ascending: false }),
+        supabase.from('produtos').select('*').eq('destaque', true).limit(8).order('created_at', { ascending: false }),
         supabase.from('categorias').select('*')
       ]);
 
-      if (prodRes.data) setFeaturedProducts(prodRes.data);
+      if (prodRes.data && prodRes.data.length > 0) {
+        setFeaturedProducts(prodRes.data);
+      } else {
+        // Fallback to recent products if no featured ones
+        const { data } = await supabase.from('produtos').select('*').limit(4).order('created_at', { ascending: false });
+        if (data) setFeaturedProducts(data);
+      }
       if (catRes.data) setCategories(catRes.data);
       setLoading(false);
     };
     loadHomeData();
   }, []);
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemsPerView, setItemsPerView] = useState(4);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) setItemsPerView(1);
+      else if (window.innerWidth < 1024) setItemsPerView(2);
+      else setItemsPerView(4);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length);
+  };
+
   return (
     <div className="pb-20">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black py-16">
         <div className="absolute inset-0 z-0">
-          <motion.img 
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.5 }}
-            transition={{ duration: 2, ease: "easeOut" }}
-            src="https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=2070" 
-            alt="Streetwear Hero" 
-            className="w-full h-full object-cover"
-          />
           <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/20 to-black" />
         </div>
         
@@ -81,17 +101,27 @@ export const Home = () => {
         </motion.div>
       </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+      {/* Featured Products Carousel */}
+      <section className="max-w-7xl mx-auto px-6 pt-8 pb-0 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-4 gap-8">
           <div className="max-w-xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Destaques</h2>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-2">Destaques</h2>
             <p className="text-zinc-500 text-lg">Peças selecionadas que definem a temporada.</p>
           </div>
-          <Link to="/catalogo" className="group flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">
-            Ver Coleção Completa 
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={prevSlide}
+              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              onClick={nextSlide}
+              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -101,18 +131,26 @@ export const Home = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="relative">
+            <motion.div 
+              className="flex gap-8"
+              animate={{ x: `calc(-${currentIndex * 100}% / ${itemsPerView} - ${currentIndex * (32 / itemsPerView)}px)` }}
+              transition={{ type: "spring", damping: 25, stiffness: 120 }}
+            >
+              {featuredProducts.map(product => (
+                <div key={product.id} className="min-w-full md:min-w-[calc(50%-1rem)] lg:min-w-[calc(25%-1.5rem)]">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </motion.div>
           </div>
         )}
       </section>
 
       {/* Categories Grid - Bento Style */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="mb-16">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Categorias</h2>
+      <section className="max-w-7xl mx-auto px-6 pt-0 pb-8">
+        <div className="mb-0">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-0">Categorias</h2>
           <p className="text-zinc-500 text-lg">Encontre seu estilo único.</p>
         </div>
         
@@ -130,12 +168,7 @@ export const Home = () => {
                 to={`/catalogo?categoria=${category.id}`}
                 className="block w-full h-full"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
-                <img 
-                  src={`https://picsum.photos/seed/${category.nome}/800/600`} 
-                  alt={category.nome}
-                  className="w-full h-full object-cover opacity-50 transition-transform duration-700 group-hover:scale-105"
-                />
+                <div className="absolute inset-0 bg-zinc-900 z-10" />
                 <div className="absolute bottom-10 left-10 z-20">
                   <h3 className="text-3xl font-bold tracking-tight mb-2">{category.nome}</h3>
                   <span className="text-sm font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2">
@@ -182,17 +215,15 @@ export const Home = () => {
                 <motion.div 
                   animate={{ rotate: [0, 5, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl z-20"
+                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl z-20 bg-zinc-900 flex items-center justify-center"
                 >
-                  <img src="https://picsum.photos/seed/kb1/800/800" alt="Insta 1" className="w-full h-full object-cover" />
+                  <Instagram size={48} className="text-zinc-800" />
                 </motion.div>
                 <motion.div 
                   animate={{ rotate: [0, -5, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl translate-x-8 translate-y-8 z-10 opacity-50"
-                >
-                  <img src="https://picsum.photos/seed/kb2/800/800" alt="Insta 2" className="w-full h-full object-cover" />
-                </motion.div>
+                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl translate-x-8 translate-y-8 z-10 opacity-50 bg-zinc-900"
+                />
               </div>
             </div>
           </div>
