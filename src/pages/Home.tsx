@@ -78,27 +78,27 @@ export const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/20 to-black" />
         </div>
         
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-24">
+        <div className="relative z-10 text-center px-4 max-w-6xl mx-auto pt-24">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <span className="inline-block px-4 py-1.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-6 text-zinc-400">
+            <span className="inline-block px-4 py-1.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-6 text-muted">
               Nova Coleção 2026
             </span>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter-extra mb-6 leading-[0.85] text-balance">
+            <h1 className="text-5xl md:text-7xl mb-6 leading-[0.85] text-balance">
               KB OUTLET <br /> 
-              <span className="text-zinc-600">PREMIUM.</span>
+              <span className="text-gray-base">PREMIUM.</span>
             </h1>
-            <p className="text-zinc-400 text-base md:text-lg mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="text-muted text-base md:text-lg mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
               A curadoria definitiva do streetwear global. <br className="hidden md:block" />
               Qualidade sem concessões, estilo sem limites.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
               <Link 
                 to="/catalogo" 
-                className="px-10 py-5 bg-white text-black font-bold rounded-full flex items-center gap-3 hover:bg-zinc-200 transition-all btn-glow text-base"
+                className="px-10 py-5 bg-white text-black font-bold rounded-full flex items-center gap-3 hover:scale-105 transition-all text-base"
               >
                 Explorar Catálogo <ArrowRight size={20} />
               </Link>
@@ -119,11 +119,11 @@ export const Home = () => {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-8">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-12 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
           <div className="max-w-xl">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Destaques</h2>
-            <p className="text-zinc-500 text-base">Peças selecionadas que definem a temporada.</p>
+            <h2 className="text-3xl md:text-5xl mb-2">Destaques</h2>
+            <p className="text-muted text-base">Peças selecionadas que definem a temporada.</p>
           </div>
           {featuredProducts.length > 1 && (
             <div className="flex items-center gap-4">
@@ -167,11 +167,11 @@ export const Home = () => {
       </section>
 
       {/* Categories Carousel */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-8">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-12 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
           <div className="max-w-xl">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Categorias</h2>
-            <p className="text-zinc-500 text-base">Encontre seu estilo único.</p>
+            <h2 className="text-3xl md:text-5xl mb-2">Categorias</h2>
+            <p className="text-muted text-base">Encontre seu estilo único.</p>
           </div>
           <div className="flex items-center gap-4">
             <button 
@@ -229,30 +229,30 @@ export const Home = () => {
       </section>
 
       {/* Premium Horizontal Community CTA */}
-      <section className="w-full py-12 px-6 relative overflow-hidden">
+      <section className="w-full py-24 px-6 relative overflow-hidden">
         {/* Background Glows */}
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-purple-900/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-red-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] glow-purple pointer-events-none"></div>
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] glow-red pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="w-full min-h-[140px] md:h-[150px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:px-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="w-full min-h-[140px] md:h-[150px] glass-effect rounded-2xl p-8 md:px-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
             {/* Subtle Detail: KB Monogram background */}
             <div className="absolute -left-4 -bottom-8 text-white/[0.02] font-black text-[120px] pointer-events-none select-none">
               KB
             </div>
             
             <div className="flex flex-col items-center md:items-start text-center md:text-left relative z-10">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 mb-2">
+              <span className="text-[12px] font-black uppercase tracking-[0.5em] text-muted mb-2">
                 Comunidade KB
               </span>
-              <h2 className="text-xl md:text-2xl font-semibold text-zinc-200 tracking-tight mb-2 md:whitespace-nowrap">
+              <h2 className="text-xl md:text-2xl text-accent mb-2 md:whitespace-nowrap">
                 Entre pro jogo — <span className="text-white">drops exclusivos e bastidores da KB.</span>
               </h2>
               
               {/* Instagram Indicator */}
-              <div className="flex items-center gap-2 text-white/70 hover:text-white transition-colors cursor-default">
+              <div className="flex items-center gap-2 text-muted hover:text-white transition-colors cursor-default">
                 <Instagram size={14} />
-                <span className="text-[11px] font-black tracking-[0.2em] uppercase">@K.B_OUTLET</span>
+                <span className="text-[12px] font-bold tracking-[0.3em] uppercase">@K.B_OUTLET</span>
               </div>
             </div>
 
@@ -261,9 +261,9 @@ export const Home = () => {
                 href="https://www.instagram.com/k.b_outlet/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="px-10 py-4 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_10px_30px_rgba(255,255,255,0.15)] active:scale-95 whitespace-nowrap flex items-center gap-3"
+                className="px-6 py-3 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_10px_30px_rgba(255,255,255,0.15)] active:scale-95 whitespace-nowrap flex items-center gap-2.5"
               >
-                <Instagram size={16} />
+                <Instagram size={14} />
                 Acesse nosso instagram
               </a>
             </div>

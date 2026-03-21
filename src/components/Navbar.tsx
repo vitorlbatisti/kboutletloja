@@ -30,8 +30,8 @@ export const Navbar = ({ onOpenCart }: { onOpenCart: () => void }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className={`flex justify-between items-center h-16 px-4 sm:px-8 rounded-full transition-all duration-500 ${isScrolled ? 'glass-effect shadow-2xl border-white/10' : 'bg-transparent border-transparent'} border`}>
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-black tracking-tighter text-white">
-              KB<span className="text-zinc-500">OUTLET</span>
+            <Link to="/" className="text-2xl font-black tracking-tighter text-white font-bebas">
+              KB<span className="text-muted">OUTLET</span>
             </Link>
           </div>
 
