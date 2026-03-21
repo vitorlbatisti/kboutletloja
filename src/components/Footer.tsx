@@ -56,7 +56,7 @@ export const Footer = () => {
                 </div>
                 <div>
                   <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-1">WhatsApp</p>
-                  <p className="text-sm text-zinc-400 font-bold">(49) 98189-601</p>
+                  <p className="text-sm text-zinc-400 font-bold">+55 (49) 9 9818-9601</p>
                 </div>
               </li>
               <li className="flex items-start gap-4 group cursor-pointer">
