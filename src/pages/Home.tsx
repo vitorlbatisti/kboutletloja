@@ -32,13 +32,22 @@ export const Home = () => {
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [categoryIndex, setCategoryIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
+  const [catItemsPerView, setCatItemsPerView] = useState(3);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) setItemsPerView(1);
-      else if (window.innerWidth < 1024) setItemsPerView(2);
-      else setItemsPerView(4);
+      if (window.innerWidth < 768) {
+        setItemsPerView(1.2);
+        setCatItemsPerView(1.2);
+      } else if (window.innerWidth < 1024) {
+        setItemsPerView(3);
+        setCatItemsPerView(2);
+      } else {
+        setItemsPerView(5);
+        setCatItemsPerView(3);
+      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -51,6 +60,14 @@ export const Home = () => {
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length);
+  };
+
+  const nextCategory = () => {
+    setCategoryIndex((prev) => (prev + 1) % categories.length);
+  };
+
+  const prevCategory = () => {
+    setCategoryIndex((prev) => (prev - 1 + categories.length) % categories.length);
   };
 
   return (
@@ -67,23 +84,23 @@ export const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <span className="inline-block px-5 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full text-xs font-black tracking-[0.3em] uppercase mb-8 text-zinc-400">
+            <span className="inline-block px-4 py-1.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-6 text-zinc-400">
               Nova Coleção 2026
             </span>
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter-extra mb-8 leading-[0.85] text-balance">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter-extra mb-6 leading-[0.85] text-balance">
               KB OUTLET <br /> 
               <span className="text-zinc-600">PREMIUM.</span>
             </h1>
-            <p className="text-zinc-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="text-zinc-400 text-base md:text-lg mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
               A curadoria definitiva do streetwear global. <br className="hidden md:block" />
               Qualidade sem concessões, estilo sem limites.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
               <Link 
                 to="/catalogo" 
-                className="px-12 py-6 bg-white text-black font-bold rounded-full flex items-center gap-3 hover:bg-zinc-200 transition-all btn-glow text-lg"
+                className="px-10 py-5 bg-white text-black font-bold rounded-full flex items-center gap-3 hover:bg-zinc-200 transition-all btn-glow text-base"
               >
-                Explorar Catálogo <ArrowRight size={22} />
+                Explorar Catálogo <ArrowRight size={20} />
               </Link>
             </div>
           </motion.div>
@@ -102,43 +119,45 @@ export const Home = () => {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="max-w-7xl mx-auto px-6 pt-8 pb-0 overflow-hidden">
+      <section className="max-w-6xl mx-auto px-6 pt-4 pb-0 overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-end mb-4 gap-8">
           <div className="max-w-xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-2">Destaques</h2>
-            <p className="text-zinc-500 text-lg">Peças selecionadas que definem a temporada.</p>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tighter mb-1">Destaques</h2>
+            <p className="text-zinc-500 text-sm">Peças selecionadas que definem a temporada.</p>
           </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={prevSlide}
-              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button 
-              onClick={nextSlide}
-              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+          {featuredProducts.length > 1 && (
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={prevSlide}
+                className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={nextSlide}
+                className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="aspect-[4/5] bg-zinc-950 animate-pulse rounded-[2rem] border border-white/5" />
+          <div className="flex gap-6 overflow-hidden">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="min-w-[260px] w-[70%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] aspect-[3/4] bg-zinc-950 animate-pulse rounded-[2rem] border border-white/5 shrink-0" />
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div className="relative overflow-hidden">
             <motion.div 
-              className="flex gap-8"
-              animate={{ x: `calc(-${currentIndex * 100}% / ${itemsPerView} - ${currentIndex * (32 / itemsPerView)}px)` }}
+              className="flex gap-6"
+              animate={{ x: `calc(-${currentIndex * 100}% / ${itemsPerView} - ${currentIndex * (24 / itemsPerView)}px)` }}
               transition={{ type: "spring", damping: 25, stiffness: 120 }}
             >
               {featuredProducts.map(product => (
-                <div key={product.id} className="min-w-full md:min-w-[calc(50%-1rem)] lg:min-w-[calc(25%-1.5rem)]">
+                <div key={product.id} className="min-w-[260px] w-[70%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] shrink-0">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -147,82 +166,110 @@ export const Home = () => {
         )}
       </section>
 
-      {/* Categories Grid - Bento Style */}
-      <section className="max-w-7xl mx-auto px-6 pt-0 pb-8">
-        <div className="mb-0">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-0">Categorias</h2>
-          <p className="text-zinc-500 text-lg">Encontre seu estilo único.</p>
+      {/* Categories Carousel */}
+      <section className="max-w-7xl mx-auto px-6 pt-12 pb-8 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-8">
+          <div className="max-w-xl">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Categorias</h2>
+            <p className="text-zinc-500 text-base">Encontre seu estilo único.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={prevCategory}
+              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              onClick={nextCategory}
+              className="p-3 bg-zinc-900 border border-white/5 rounded-full hover:bg-white hover:text-black transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.slice(0, 3).map((category, idx) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-zinc-950 border border-white/5 h-[400px]"
-            >
-              <Link 
-                to={`/catalogo?categoria=${category.id}`}
-                className="block w-full h-full"
+        <div className="relative">
+          <motion.div 
+            className="flex gap-6"
+            animate={{ x: `calc(-${categoryIndex * 100}% / ${catItemsPerView} - ${categoryIndex * (24 / catItemsPerView)}px)` }}
+            transition={{ type: "spring", damping: 25, stiffness: 120 }}
+          >
+            {categories.map((category, idx) => (
+              <motion.div
+                key={category.id}
+                className="min-w-full md:min-w-[calc(50%-0.75rem)] lg:min-w-[calc(33.333%-1rem)] group relative overflow-hidden rounded-[2rem] bg-zinc-950 border border-white/5 h-[300px]"
               >
-                <div className="absolute inset-0 bg-zinc-900 z-10" />
-                <div className="absolute bottom-10 left-10 z-20">
-                  <h3 className="text-3xl font-bold tracking-tight mb-2">{category.nome}</h3>
-                  <span className="text-sm font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2">
-                    Explorar <ArrowRight size={14} />
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                <Link 
+                  to={`/catalogo?categoria=${category.id}`}
+                  className="block w-full h-full"
+                >
+                  {category.imagem_url ? (
+                    <img 
+                      src={category.imagem_url} 
+                      alt={category.nome}
+                      className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-110"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-zinc-900 z-0" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+                  <div className="absolute bottom-8 left-8 z-20">
+                    <h3 className="text-2xl font-bold tracking-tight mb-2">{category.nome}</h3>
+                    <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2">
+                      Explorar <ArrowRight size={14} />
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* Instagram Section */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="relative overflow-hidden bg-zinc-950 rounded-[3rem] p-12 md:p-24 border border-white/5">
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="relative overflow-hidden bg-zinc-950 rounded-[2.5rem] p-8 md:p-16 border border-white/5">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-16">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="max-w-xl text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-orange-500 flex items-center justify-center">
-                  <Instagram size={24} className="text-white" />
+              <div className="flex items-center justify-center md:justify-start gap-4 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-orange-500 flex items-center justify-center">
+                  <Instagram size={20} className="text-white" />
                 </div>
-                <span className="text-sm font-bold uppercase tracking-[0.3em] text-zinc-500">Comunidade</span>
+                <span className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">Comunidade</span>
               </div>
-              <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 leading-tight">
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-6 leading-tight">
                 JUNTE-SE À <br /> <span className="text-zinc-500">EXPERIÊNCIA.</span>
               </h2>
-              <p className="text-zinc-400 text-lg mb-12 leading-relaxed">
+              <p className="text-zinc-400 text-base mb-8 leading-relaxed">
                 Acompanhe os bastidores, drops exclusivos e o lifestyle KB Outlet em tempo real.
               </p>
               <a 
                 href="https://www.instagram.com/k.b_outlet/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-black rounded-full transition-all font-bold hover:bg-zinc-200"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full transition-all font-bold hover:bg-zinc-200 text-sm"
               >
                 @k.b_outlet
               </a>
             </div>
             
             <div className="relative w-full md:w-auto flex justify-center">
-              <div className="relative w-64 h-64 md:w-80 md:h-80">
+              <div className="relative w-48 h-48 md:w-64 md:h-64">
                 <motion.div 
                   animate={{ rotate: [0, 5, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl z-20 bg-zinc-900 flex items-center justify-center"
+                  className="absolute inset-0 rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-2xl z-20 bg-zinc-900 flex items-center justify-center"
                 >
-                  <Instagram size={48} className="text-zinc-800" />
+                  <Instagram size={40} className="text-zinc-800" />
                 </motion.div>
                 <motion.div 
                   animate={{ rotate: [0, -5, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl translate-x-8 translate-y-8 z-10 opacity-50 bg-zinc-900"
+                  className="absolute inset-0 rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-2xl translate-x-6 translate-y-6 z-10 opacity-50 bg-zinc-900"
                 />
               </div>
             </div>

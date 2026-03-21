@@ -38,7 +38,7 @@ export const ProductDetails = () => {
   if (loading) return (
     <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 animate-pulse">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-        <div className="aspect-[4/5] bg-zinc-950 rounded-[3rem] border border-white/5" />
+        <div className="aspect-[3/4] bg-zinc-950 rounded-[3rem] border border-white/5" />
         <div className="space-y-8">
           <div className="h-16 bg-zinc-950 rounded-2xl w-3/4" />
           <div className="h-8 bg-zinc-950 rounded-xl w-1/4" />
@@ -73,7 +73,7 @@ export const ProductDetails = () => {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="aspect-[4/5] rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl"
+          className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl"
         >
           <img 
             src={product.imagem_url} 

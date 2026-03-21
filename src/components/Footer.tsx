@@ -78,7 +78,11 @@ export const Footer = () => {
               © {currentYear} KB OUTLET PREMIUM. TODOS OS DIREITOS RESERVADOS.
             </p>
             <div className="flex gap-6">
-              <Link to="/admin" className="text-zinc-800 hover:text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors">
+              <Link 
+                to="/admin" 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-zinc-800 hover:text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors"
+              >
                 Acesso Restrito
               </Link>
             </div>

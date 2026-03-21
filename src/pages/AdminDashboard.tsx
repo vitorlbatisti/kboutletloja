@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Product, Category, Order } from '../types';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw } from 'lucide-react';
+
+const AVAILABLE_SIZES = ['P', 'M', 'G', 'XG', 'XXG'];
 
 export const AdminDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -33,43 +35,48 @@ export const AdminDashboard = () => {
     loadDashboardData();
   }, []);
 
-  const loadDashboardData = async () => {
-    setLoading(true);
+  const loadDashboardData = async (silent = false) => {
+    if (!silent) setLoading(true);
+    console.log('--- INICIANDO CARREGAMENTO DE DADOS DO DASHBOARD ---');
+    const startTime = performance.now();
+    
     try {
-      console.log('Carregando dados do dashboard...');
-      const [prodRes, catRes, orderRes] = await Promise.all([
-        supabase.from('produtos').select('*').order('created_at', { ascending: false }),
-        supabase.from('categorias').select('*').order('nome'),
-        supabase.from('pedidos_v1').select('*').order('created_at', { ascending: false })
-      ]);
-      
+      // Fetch products
+      console.log('Buscando produtos...');
+      const prodRes = await supabase.from('produtos').select('*').order('created_at', { ascending: false });
       if (prodRes.error) {
         console.error('Erro ao carregar produtos:', prodRes.error);
-        throw new Error(`Erro ao carregar produtos: ${prodRes.error.message}`);
+        // Don't throw here, let other queries finish
+      } else {
+        console.log(`Sucesso: ${prodRes.data?.length || 0} produtos encontrados.`);
+        if (prodRes.data) setProducts(prodRes.data);
       }
+
+      // Fetch categories
+      console.log('Buscando categorias...');
+      const catRes = await supabase.from('categorias').select('*').order('nome');
       if (catRes.error) {
         console.error('Erro ao carregar categorias:', catRes.error);
-        throw new Error(`Erro ao carregar categorias: ${catRes.error.message}`);
+      } else {
+        console.log(`Sucesso: ${catRes.data?.length || 0} categorias encontradas.`);
+        if (catRes.data) setCategories(catRes.data);
       }
-      
-      // Pedidos podem não existir ainda (tabela opcional no início)
+
+      // Fetch orders
+      console.log('Buscando pedidos...');
+      const orderRes = await supabase.from('pedidos_v1').select('*').order('created_at', { ascending: false });
       if (orderRes.error) {
         console.warn('Tabela pedidos_v1 não encontrada ou erro ao carregar:', orderRes.error.message);
         setOrders([]);
-      } else if (orderRes.data) {
-        setOrders(orderRes.data);
+      } else {
+        console.log(`Sucesso: ${orderRes.data?.length || 0} pedidos encontrados.`);
+        if (orderRes.data) setOrders(orderRes.data);
       }
-      
-      if (prodRes.data) setProducts(prodRes.data);
-      if (catRes.data) setCategories(catRes.data);
-      
-      console.log('Dados carregados com sucesso:', {
-        produtos: prodRes.data?.length,
-        categorias: catRes.data?.length,
-        pedidos: orderRes.data?.length || 0
-      });
+
+      const endTime = performance.now();
+      console.log(`--- CARREGAMENTO CONCLUÍDO EM ${(endTime - startTime).toFixed(2)}ms ---`);
     } catch (err: any) {
-      console.error('Erro ao carregar dados:', err);
+      console.error('Erro inesperado ao carregar dados:', err);
       alert(err.message || 'Erro inesperado ao carregar dados do dashboard.');
     } finally {
       setLoading(false);
@@ -80,6 +87,30 @@ export const AdminDashboard = () => {
     console.log('Saindo do painel admin...');
     await supabase.auth.signOut();
     navigate('/admin');
+  };
+
+  const formatCurrency = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    const amount = (parseInt(digits || '0') / 100).toFixed(2);
+    const [integer, decimal] = amount.split('.');
+    const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${formattedInteger},${decimal}`;
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value);
+    setFormData({ ...formData, preco: formatted });
+  };
+
+  const toggleSize = (size: string) => {
+    const currentSizes = formData.tamanhos.split(',').map(s => s.trim()).filter(s => s !== '');
+    let newSizes;
+    if (currentSizes.includes(size)) {
+      newSizes = currentSizes.filter(s => s !== size);
+    } else {
+      newSizes = [...currentSizes, size];
+    }
+    setFormData({ ...formData, tamanhos: newSizes.join(', ') });
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -102,6 +133,11 @@ export const AdminDashboard = () => {
         throw new Error('Sessão expirada. Por favor, saia e entre novamente no painel admin.');
       }
       console.log('Sessão ativa:', session.user.email);
+
+      // 0.5 Validate Sizes
+      if (!formData.tamanhos || formData.tamanhos.trim() === '') {
+        throw new Error('Por favor, selecione pelo menos um tamanho para o produto.');
+      }
 
       let finalImageUrl = formData.imagem_url;
 
@@ -144,11 +180,11 @@ export const AdminDashboard = () => {
       }
 
       if (!finalImageUrl || finalImageUrl.trim() === '') {
-        throw new Error('Por favor, selecione uma imagem ou insira uma URL válida.');
+        throw new Error('Por favor, selecione uma imagem do seu dispositivo.');
       }
 
       // 2. Prepare Payload
-      const precoRaw = formData.preco.toString().replace(',', '.');
+      const precoRaw = formData.preco.replace(/\./g, '').replace(',', '.');
       const precoNum = parseFloat(precoRaw);
       
       if (isNaN(precoNum)) {
@@ -247,7 +283,7 @@ export const AdminDashboard = () => {
     setEditingId(p.id);
     setFormData({
       nome: p.nome,
-      preco: p.preco.toString(),
+      preco: formatCurrency((p.preco * 100).toFixed(0)),
       descricao: p.descricao,
       tamanhos: p.tamanhos.join(', '),
       imagem_url: p.imagem_url,
@@ -297,6 +333,10 @@ export const AdminDashboard = () => {
           .getPublicUrl(filePath);
         
         finalImageUrl = publicUrl;
+      }
+
+      if (!finalImageUrl || finalImageUrl.trim() === '') {
+        throw new Error('Por favor, selecione uma imagem para a categoria.');
       }
 
       const payload = {
@@ -363,6 +403,13 @@ export const AdminDashboard = () => {
           <p className="text-zinc-500 mt-1 sm:text-base text-sm">Gerencie seus produtos e categorias</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+          <button 
+            onClick={() => loadDashboardData()}
+            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm sm:text-base"
+            title="Atualizar dados"
+          >
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> Atualizar
+          </button>
           <button 
             onClick={handleLogout}
             className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm sm:text-base"
@@ -591,15 +638,34 @@ export const AdminDashboard = () => {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Preço (R$)</label>
-                <input required type="text" placeholder="0,00" value={formData.preco} onChange={e => setFormData({...formData, preco: e.target.value})} className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-sm" />
+                <input required type="text" placeholder="0,00" value={formData.preco} onChange={handlePriceChange} className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-sm" />
               </div>
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Descrição</label>
                 <textarea required rows={2} value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})} className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-sm resize-none" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Tamanhos</label>
-                <input required placeholder="P, M, G, GG" value={formData.tamanhos} onChange={e => setFormData({...formData, tamanhos: e.target.value})} className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-sm" />
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Tamanhos Disponíveis</label>
+                <div className="flex flex-wrap gap-2">
+                  {AVAILABLE_SIZES.map(size => {
+                    const isSelected = formData.tamanhos.split(',').map(s => s.trim()).includes(size);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => toggleSize(size)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                          isSelected 
+                            ? 'bg-white text-black border-white' 
+                            : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-600'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-2">Selecione um ou mais tamanhos para o produto</p>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Categoria</label>
@@ -620,30 +686,24 @@ export const AdminDashboard = () => {
               </div>
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Imagem do Produto</label>
-                <div className="flex gap-4 items-center">
-                  <div className="w-24 h-24 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center relative group shrink-0">
+                <div className="flex flex-col gap-4">
+                  <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden flex items-center justify-center relative group">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="text-zinc-700" size={24} />
+                      <div className="flex flex-col items-center gap-2 text-zinc-600">
+                        <ImageIcon size={40} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Selecionar Imagem</span>
+                      </div>
                     )}
-                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-[10px] font-bold text-white uppercase tracking-wider text-center px-2">
-                      Alterar
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <div className="px-6 py-2 bg-white text-black text-xs font-bold rounded-full uppercase tracking-widest shadow-xl">
+                        {imagePreview ? 'Alterar Imagem' : 'Selecionar do Dispositivo'}
+                      </div>
                       <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                     </label>
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <input 
-                      value={formData.imagem_url} 
-                      onChange={e => {
-                        setFormData({...formData, imagem_url: e.target.value});
-                        if (!imageFile) setImagePreview(e.target.value);
-                      }} 
-                      className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-xs" 
-                      placeholder="Ou cole o link da imagem aqui..."
-                    />
-                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest">JPG, PNG ou WEBP</p>
-                  </div>
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest text-center">Formatos aceitos: JPG, PNG ou WEBP</p>
                 </div>
               </div>
               <div className="md:col-span-2 flex justify-end gap-4 mt-4">
@@ -674,16 +734,21 @@ export const AdminDashboard = () => {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm text-zinc-400">Imagem da Categoria (Opcional)</label>
-                <div className="flex gap-4 items-center">
-                  <div className="w-20 h-20 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden flex items-center justify-center relative group shrink-0">
+                <label className="text-sm text-zinc-400">Imagem da Categoria</label>
+                <div className="flex flex-col gap-4">
+                  <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden flex items-center justify-center relative group">
                     {catImagePreview ? (
                       <img src={catImagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="text-zinc-700" size={20} />
+                      <div className="flex flex-col items-center gap-2 text-zinc-600">
+                        <ImageIcon size={32} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Selecionar Imagem</span>
+                      </div>
                     )}
-                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-[8px] font-bold text-white uppercase tracking-wider text-center px-2">
-                      Alterar
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <div className="px-6 py-2 bg-white text-black text-xs font-bold rounded-full uppercase tracking-widest shadow-xl">
+                        {catImagePreview ? 'Alterar Imagem' : 'Selecionar do Dispositivo'}
+                      </div>
                       <input type="file" accept="image/*" onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
                           const file = e.target.files[0];
@@ -693,15 +758,7 @@ export const AdminDashboard = () => {
                       }} className="hidden" />
                     </label>
                   </div>
-                  <input 
-                    value={catFormData.imagem_url} 
-                    onChange={e => {
-                      setCatFormData({...catFormData, imagem_url: e.target.value});
-                      if (!catImageFile) setCatImagePreview(e.target.value);
-                    }} 
-                    className="flex-1 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-xs" 
-                    placeholder="Link da imagem (opcional)..."
-                  />
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest text-center">Formatos aceitos: JPG, PNG ou WEBP</p>
                 </div>
               </div>
 

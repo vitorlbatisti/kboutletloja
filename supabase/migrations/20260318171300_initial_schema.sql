@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS categorias (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nome TEXT NOT NULL UNIQUE,
+  imagem_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -17,6 +18,7 @@ CREATE TABLE IF NOT EXISTS produtos (
   tamanhos TEXT[] NOT NULL DEFAULT '{}',
   imagem_url TEXT NOT NULL,
   categoria_id UUID REFERENCES categorias(id) ON DELETE SET NULL,
+  destaque BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -80,26 +82,27 @@ INSERT INTO categorias (nome) VALUES
 ('Acessórios')
 ON CONFLICT (nome) DO NOTHING;
 
--- 7. Storage Bucket for Product Images
+-- 7. Storage Buckets for Images
 -- Note: This might require manual creation in the dashboard if SQL fails due to permissions
 -- But here is the standard way to do it via SQL:
 INSERT INTO storage.buckets (id, name, public) 
-VALUES ('produtos', 'produtos', true)
+VALUES ('produtos', 'produtos', true),
+       ('categorias', 'categorias', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Allow public access to read images
 CREATE POLICY "Public Access"
 ON storage.objects FOR SELECT
-USING ( bucket_id = 'produtos' );
+USING ( bucket_id IN ('produtos', 'categorias') );
 
 -- Allow authenticated users to upload images
 CREATE POLICY "Admin Upload Access"
 ON storage.objects FOR INSERT
 TO authenticated
-WITH CHECK ( bucket_id = 'produtos' );
+WITH CHECK ( bucket_id IN ('produtos', 'categorias') );
 
 -- Allow authenticated users to delete images
 CREATE POLICY "Admin Delete Access"
 ON storage.objects FOR DELETE
 TO authenticated
-USING ( bucket_id = 'produtos' );
+USING ( bucket_id IN ('produtos', 'categorias') );
