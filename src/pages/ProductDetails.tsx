@@ -13,6 +13,8 @@ export const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [personalizacaoTexto, setPersonalizacaoTexto] = useState('');
+  const [personalizacaoNumero, setPersonalizacaoNumero] = useState('');
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
-    addToCart(product, selectedSize);
+    addToCart(product, selectedSize, personalizacaoTexto, personalizacaoNumero);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -61,19 +63,19 @@ export const ProductDetails = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 pt-40 pb-32">
+    <div className="max-w-6xl mx-auto px-6 pt-32 pb-24">
       <button 
         onClick={() => navigate(-1)}
-        className="group flex items-center gap-3 text-zinc-500 hover:text-white mb-12 transition-all font-bold uppercase tracking-widest text-xs"
+        className="group flex items-center gap-2 text-zinc-500 hover:text-white mb-8 transition-all font-bold uppercase tracking-widest text-[10px]"
       >
-        <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Voltar
+        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" /> Voltar
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-start">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl"
+          className="aspect-[4/5] md:aspect-auto md:h-[600px] rounded-[2rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl"
         >
           <img 
             src={product.imagem_url} 
@@ -87,26 +89,29 @@ export const ProductDetails = () => {
           animate={{ opacity: 1, x: 0 }}
           className="flex flex-col"
         >
-          <div className="mb-10">
-            <span className="inline-block px-4 py-1.5 bg-white/5 border border-white/5 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-6 text-zinc-500">
+          <div className="mb-8">
+            <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase mb-4 text-emerald-500">
               Disponível em Estoque
             </span>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter-extra mb-4 leading-tight">{product.nome}</h1>
-            <p className="text-3xl font-bold text-white tracking-tighter">R$ {product.preco.toFixed(2)}</p>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter-extra mb-3 leading-tight text-white">{product.nome}</h1>
+            <div className="flex items-center gap-4">
+              <p className="text-2xl font-black text-white tracking-tighter">R$ {product.preco.toFixed(2)}</p>
+              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded">Preço à vista</span>
+            </div>
           </div>
           
-          <div className="prose prose-invert max-w-none mb-12">
-            <p className="text-zinc-400 text-lg leading-relaxed font-medium">{product.descricao}</p>
+          <div className="prose prose-invert max-w-none mb-10">
+            <p className="text-zinc-400 text-base leading-relaxed font-medium border-l-2 border-white/10 pl-4">{product.descricao}</p>
           </div>
 
-          <div className="mb-12">
-            <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-600 mb-6">Selecione o Tamanho</h3>
-            <div className="flex flex-wrap gap-4">
+          <div className="mb-10">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">Selecione o Tamanho</h3>
+            <div className="flex flex-wrap gap-3">
               {product.tamanhos?.map(size => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`min-w-[64px] h-16 flex items-center justify-center rounded-2xl border-2 font-black transition-all duration-300 ${
+                  className={`min-w-[56px] h-14 flex items-center justify-center rounded-xl border-2 font-black transition-all duration-300 text-sm ${
                     selectedSize === size 
                       ? 'bg-white text-black border-white shadow-xl scale-105' 
                       : 'bg-zinc-950 text-zinc-500 border-white/5 hover:border-white/20'
@@ -118,30 +123,59 @@ export const ProductDetails = () => {
             </div>
           </div>
 
+          {product.permite_personalizacao && (
+            <div className="mb-10 space-y-5 p-6 bg-zinc-950/50 rounded-3xl border border-white/5">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Personalização (+ R$ {product.preco_personalizacao?.toFixed(2)})</h3>
+              
+              <div className="space-y-2">
+                <label className="text-[9px] text-zinc-400 uppercase tracking-widest ml-1 font-black">Nome / Texto</label>
+                <input
+                  type="text"
+                  placeholder="EX: SEU NOME"
+                  value={personalizacaoTexto}
+                  onChange={(e) => setPersonalizacaoTexto(e.target.value)}
+                  className="w-full px-6 py-4 bg-zinc-950 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-base font-black transition-all placeholder:text-zinc-800 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] text-zinc-400 uppercase tracking-widest ml-1 font-black">Número da Camisa</label>
+                <input
+                  type="text"
+                  placeholder="EX: 10"
+                  maxLength={3}
+                  value={personalizacaoNumero}
+                  onChange={(e) => setPersonalizacaoNumero(e.target.value)}
+                  className="w-full px-6 py-4 bg-zinc-950 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-base font-black transition-all placeholder:text-zinc-800 text-white"
+                />
+              </div>
+            </div>
+          )}
+
           <button
             onClick={handleAddToCart}
             disabled={added}
-            className={`w-full py-6 rounded-[2rem] font-black text-lg uppercase tracking-widest flex items-center justify-center gap-4 transition-all duration-500 shadow-2xl ${
-              added ? 'bg-emerald-500 text-white scale-95' : 'bg-white text-black hover:bg-zinc-200 hover:scale-[1.02] active:scale-[0.98]'
+            className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all duration-500 shadow-xl ${
+              added ? 'bg-emerald-500 text-white scale-95' : 'bg-white text-black hover:bg-zinc-200 hover:scale-[1.01] active:scale-[0.99]'
             }`}
           >
             {added ? (
               <>
-                <Check size={24} /> Adicionado
+                <Check size={20} /> Adicionado
               </>
             ) : (
               <>
-                <ShoppingBag size={24} /> Adicionar à Sacola
+                <ShoppingBag size={20} /> Adicionar à Sacola
               </>
             )}
           </button>
 
-          <div className="mt-16 p-10 bg-zinc-950 rounded-[2.5rem] border border-white/5">
-            <h4 className="font-bold text-lg mb-4 tracking-tight">Envio & Entrega</h4>
-            <p className="text-zinc-500 leading-relaxed font-medium">
+          <div className="mt-12 p-8 bg-zinc-950 rounded-[2rem] border border-white/5">
+            <h4 className="font-bold text-base mb-3 tracking-tight text-white">Envio & Entrega</h4>
+            <p className="text-zinc-500 text-sm leading-relaxed font-medium">
               Enviamos para todo o Brasil via Correios ou Transportadora. 
-              Retirada em mãos disponível em Chapecó-SC. <br />
-              <span className="text-zinc-400 mt-2 block italic">Frete grátis em compras acima de R$ 500.</span>
+              Retirada em mãos disponível em Novo Horizonte-SC. <br />
+              <span className="text-emerald-500/80 mt-2 block italic font-bold">Frete grátis em compras acima de R$ 500.</span>
             </p>
           </div>
         </motion.div>

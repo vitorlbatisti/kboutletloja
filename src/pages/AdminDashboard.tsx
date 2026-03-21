@@ -28,7 +28,9 @@ export const AdminDashboard = () => {
     tamanhos: '',
     imagem_url: '',
     categoria_id: '',
-    destaque: false
+    destaque: false,
+    permite_personalizacao: false,
+    preco_personalizacao: '0,00'
   });
 
   useEffect(() => {
@@ -198,7 +200,9 @@ export const AdminDashboard = () => {
         tamanhos: formData.tamanhos.split(',').map(s => s.trim()).filter(s => s !== ''),
         imagem_url: finalImageUrl.trim(),
         categoria_id: formData.categoria_id || null,
-        destaque: formData.destaque
+        destaque: formData.destaque,
+        permite_personalizacao: formData.permite_personalizacao,
+        preco_personalizacao: parseFloat(formData.preco_personalizacao.replace(/\./g, '').replace(',', '.'))
       };
 
       console.log('Payload preparado para o banco de dados:', payload);
@@ -237,7 +241,17 @@ export const AdminDashboard = () => {
       setEditingId(null);
       setImageFile(null);
       setImagePreview(null);
-      setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', categoria_id: '', destaque: false });
+      setFormData({ 
+        nome: '', 
+        preco: '', 
+        descricao: '', 
+        tamanhos: '', 
+        imagem_url: '', 
+        categoria_id: '', 
+        destaque: false,
+        permite_personalizacao: false,
+        preco_personalizacao: '0,00'
+      });
       loadDashboardData();
       alert('Produto salvo com sucesso!');
     } catch (err: any) {
@@ -288,7 +302,9 @@ export const AdminDashboard = () => {
       tamanhos: p.tamanhos.join(', '),
       imagem_url: p.imagem_url,
       categoria_id: p.categoria_id,
-      destaque: p.destaque || false
+      destaque: p.destaque || false,
+      permite_personalizacao: p.permite_personalizacao || false,
+      preco_personalizacao: formatCurrency(((p.preco_personalizacao || 0) * 100).toFixed(0))
     });
     setImagePreview(p.imagem_url);
     setIsModalOpen(true);
@@ -684,6 +700,28 @@ export const AdminDashboard = () => {
                 />
                 <label htmlFor="destaque" className="text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer">Produto em Destaque</label>
               </div>
+              <div className="space-y-1 flex items-center gap-3 pt-6">
+                <input 
+                  type="checkbox" 
+                  id="permite_personalizacao"
+                  checked={formData.permite_personalizacao} 
+                  onChange={e => setFormData({...formData, permite_personalizacao: e.target.checked})}
+                  className="w-5 h-5 bg-zinc-950 border border-zinc-800 rounded-lg accent-white"
+                />
+                <label htmlFor="permite_personalizacao" className="text-xs font-black text-zinc-400 uppercase tracking-wider cursor-pointer">Permitir Personalização</label>
+              </div>
+              {formData.permite_personalizacao && (
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-zinc-400 uppercase tracking-wider">Valor Adicional (R$)</label>
+                  <input 
+                    type="text" 
+                    placeholder="0,00" 
+                    value={formData.preco_personalizacao} 
+                    onChange={e => setFormData({...formData, preco_personalizacao: formatCurrency(e.target.value)})} 
+                    className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl focus:border-zinc-500 outline-none text-sm font-bold" 
+                  />
+                </div>
+              )}
               <div className="space-y-1 md:col-span-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Imagem do Produto</label>
                 <div className="flex flex-col gap-4">

@@ -119,11 +119,11 @@ export const Home = () => {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="max-w-6xl mx-auto px-6 pt-4 pb-0 overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-4 gap-8">
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-8">
           <div className="max-w-xl">
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tighter mb-1">Destaques</h2>
-            <p className="text-zinc-500 text-sm">Peças selecionadas que definem a temporada.</p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Destaques</h2>
+            <p className="text-zinc-500 text-base">Peças selecionadas que definem a temporada.</p>
           </div>
           {featuredProducts.length > 1 && (
             <div className="flex items-center gap-4">
@@ -167,7 +167,7 @@ export const Home = () => {
       </section>
 
       {/* Categories Carousel */}
-      <section className="max-w-7xl mx-auto px-6 pt-12 pb-8 overflow-hidden">
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-8">
           <div className="max-w-xl">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-2">Categorias</h2>
@@ -228,50 +228,44 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Instagram Section */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <div className="relative overflow-hidden bg-zinc-950 rounded-[2.5rem] p-8 md:p-16 border border-white/5">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="max-w-xl text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-4 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-orange-500 flex items-center justify-center">
-                  <Instagram size={20} className="text-white" />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">Comunidade</span>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-6 leading-tight">
-                JUNTE-SE À <br /> <span className="text-zinc-500">EXPERIÊNCIA.</span>
+      {/* Premium Horizontal Community CTA */}
+      <section className="w-full py-12 px-6 relative overflow-hidden">
+        {/* Background Glows */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-purple-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-red-900/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="w-full min-h-[140px] md:h-[150px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:px-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+            {/* Subtle Detail: KB Monogram background */}
+            <div className="absolute -left-4 -bottom-8 text-white/[0.02] font-black text-[120px] pointer-events-none select-none">
+              KB
+            </div>
+            
+            <div className="flex flex-col items-center md:items-start text-center md:text-left relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 mb-2">
+                Comunidade KB
+              </span>
+              <h2 className="text-xl md:text-2xl font-semibold text-zinc-200 tracking-tight mb-2 md:whitespace-nowrap">
+                Entre pro jogo — <span className="text-white">drops exclusivos e bastidores da KB.</span>
               </h2>
-              <p className="text-zinc-400 text-base mb-8 leading-relaxed">
-                Acompanhe os bastidores, drops exclusivos e o lifestyle KB Outlet em tempo real.
-              </p>
+              
+              {/* Instagram Indicator */}
+              <div className="flex items-center gap-2 text-white/70 hover:text-white transition-colors cursor-default">
+                <Instagram size={14} />
+                <span className="text-[11px] font-black tracking-[0.2em] uppercase">@K.B_OUTLET</span>
+              </div>
+            </div>
+
+            <div className="relative z-10">
               <a 
                 href="https://www.instagram.com/k.b_outlet/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full transition-all font-bold hover:bg-zinc-200 text-sm"
+                className="px-10 py-4 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_10px_30px_rgba(255,255,255,0.15)] active:scale-95 whitespace-nowrap flex items-center gap-3"
               >
-                @k.b_outlet
+                <Instagram size={16} />
+                Acesse nosso instagram
               </a>
-            </div>
-            
-            <div className="relative w-full md:w-auto flex justify-center">
-              <div className="relative w-48 h-48 md:w-64 md:h-64">
-                <motion.div 
-                  animate={{ rotate: [0, 5, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-2xl z-20 bg-zinc-900 flex items-center justify-center"
-                >
-                  <Instagram size={40} className="text-zinc-800" />
-                </motion.div>
-                <motion.div 
-                  animate={{ rotate: [0, -5, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute inset-0 rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-2xl translate-x-6 translate-y-6 z-10 opacity-50 bg-zinc-900"
-                />
-              </div>
             </div>
           </div>
         </div>

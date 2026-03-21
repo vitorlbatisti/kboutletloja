@@ -31,7 +31,21 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       // 2. Redirect to WhatsApp
       const message = `*Novo Pedido - KB Outlet*%0A%0A` +
         `*Cliente:* ${customerName}%0A%0A` +
-        cart.map(item => `- ${item.nome} (${item.selectedSize}) x${item.quantity}: R$ ${(item.preco * item.quantity).toFixed(2)}`).join('%0A') +
+        cart.map(item => {
+          const hasPersonalization = item.personalizacao_texto || item.personalizacao_numero;
+          const itemPrice = item.preco + (hasPersonalization ? (item.preco_personalizacao || 0) : 0);
+          let itemDesc = `- ${item.nome} (${item.selectedSize})`;
+          
+          if (hasPersonalization) {
+            const parts = [];
+            if (item.personalizacao_texto) parts.push(`Nome: ${item.personalizacao_texto}`);
+            if (item.personalizacao_numero) parts.push(`Nº: ${item.personalizacao_numero}`);
+            itemDesc += ` [Personalizado: ${parts.join(', ')}]`;
+          }
+          
+          itemDesc += ` x${item.quantity}: R$ ${(itemPrice * item.quantity).toFixed(2)}`;
+          return itemDesc;
+        }).join('%0A') +
         `%0A%0A*Total: R$ ${totalPrice.toFixed(2)}*`;
       
       window.open(`https://wa.me/554998189601?text=${message}`, '_blank');
@@ -104,7 +118,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    key={`${item.id}-${item.selectedSize}`} 
+                    key={`${item.id}-${item.selectedSize}-${item.personalizacao_texto || 'none'}-${item.personalizacao_numero || 'none'}`} 
                     className="flex gap-4 group relative"
                   >
                     <div className="w-16 h-20 bg-zinc-950 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
@@ -114,26 +128,38 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                       <div>
                         <h3 className="font-bold text-white tracking-tight text-sm line-clamp-1">{item.nome}</h3>
                         <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold mt-0.5">Tamanho: {item.selectedSize}</p>
-                        <p className="text-base font-black mt-1 tracking-tighter">R$ {item.preco.toFixed(2)}</p>
+                        {(item.personalizacao_texto || item.personalizacao_numero) && (
+                          <div className="mt-1 space-y-0.5">
+                            {item.personalizacao_texto && (
+                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Nome: {item.personalizacao_texto}</p>
+                            )}
+                            {item.personalizacao_numero && (
+                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Número: {item.personalizacao_numero}</p>
+                            )}
+                          </div>
+                        )}
+                        <p className="text-base font-black mt-1 tracking-tighter">
+                          R$ {(item.preco + ((item.personalizacao_texto || item.personalizacao_numero) ? (item.preco_personalizacao || 0) : 0)).toFixed(2)}
+                        </p>
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center bg-zinc-950 border border-white/5 rounded-full px-1.5 py-0.5">
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1, item.personalizacao_texto, item.personalizacao_numero)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Minus size={14} />
                           </button>
                           <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1, item.personalizacao_texto, item.personalizacao_numero)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Plus size={14} />
                           </button>
                         </div>
                         <button 
-                          onClick={() => removeFromCart(item.id, item.selectedSize)}
+                          onClick={() => removeFromCart(item.id, item.selectedSize, item.personalizacao_texto, item.personalizacao_numero)}
                           className="p-2 text-zinc-800 hover:text-red-500 transition-all hover:bg-red-500/10 rounded-full"
                         >
                           <Trash2 size={16} />

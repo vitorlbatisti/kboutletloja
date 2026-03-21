@@ -14,12 +14,16 @@ export interface Product {
   imagem_url: string;
   categoria_id: string;
   destaque: boolean;
+  permite_personalizacao?: boolean;
+  preco_personalizacao?: number;
   created_at?: string;
 }
 
 export interface CartItem extends Product {
   selectedSize: string;
   quantity: number;
+  personalizacao_texto?: string;
+  personalizacao_numero?: string;
 }
 
 export interface Order {

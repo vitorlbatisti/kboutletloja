@@ -4,9 +4,9 @@ import { CartItem, Product } from './types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, size: string) => void;
-  removeFromCart: (productId: string, size: string) => void;
-  updateQuantity: (productId: string, size: string, quantity: number) => void;
+  addToCart: (product: Product, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
+  removeFromCart: (productId: string, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
+  updateQuantity: (productId: string, size: string, quantity: number, personalizacao_texto?: string, personalizacao_numero?: string) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -36,32 +36,48 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart, isInitialized]);
 
-  const addToCart = (product: Product, size: string) => {
+  const addToCart = (product: Product, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id && item.selectedSize === size);
+      const existing = prev.find(item => 
+        item.id === product.id && 
+        item.selectedSize === size && 
+        item.personalizacao_texto === personalizacao_texto &&
+        item.personalizacao_numero === personalizacao_numero
+      );
       if (existing) {
         return prev.map(item =>
-          item.id === product.id && item.selectedSize === size
+          item.id === product.id && 
+          item.selectedSize === size && 
+          item.personalizacao_texto === personalizacao_texto &&
+          item.personalizacao_numero === personalizacao_numero
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { ...product, selectedSize: size, quantity: 1 }];
+      return [...prev, { ...product, selectedSize: size, quantity: 1, personalizacao_texto, personalizacao_numero }];
     });
   };
 
-  const removeFromCart = (productId: string, size: string) => {
-    setCart(prev => prev.filter(item => !(item.id === productId && item.selectedSize === size)));
+  const removeFromCart = (productId: string, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
+    setCart(prev => prev.filter(item => 
+      !(item.id === productId && 
+        item.selectedSize === size && 
+        item.personalizacao_texto === personalizacao_texto &&
+        item.personalizacao_numero === personalizacao_numero)
+    ));
   };
 
-  const updateQuantity = (productId: string, size: string, quantity: number) => {
+  const updateQuantity = (productId: string, size: string, quantity: number, personalizacao_texto?: string, personalizacao_numero?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId, size);
+      removeFromCart(productId, size, personalizacao_texto, personalizacao_numero);
       return;
     }
     setCart(prev =>
       prev.map(item =>
-        item.id === productId && item.selectedSize === size
+        item.id === productId && 
+        item.selectedSize === size && 
+        item.personalizacao_texto === personalizacao_texto &&
+        item.personalizacao_numero === personalizacao_numero
           ? { ...item, quantity }
           : item
       )
@@ -71,7 +87,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => setCart([]);
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = cart.reduce((acc, item) => acc + item.preco * item.quantity, 0);
+  const totalPrice = cart.reduce((acc, item) => {
+    const basePrice = item.preco;
+    const extraPrice = (item.personalizacao_texto || item.personalizacao_numero) ? (item.preco_personalizacao || 0) : 0;
+    return acc + (basePrice + extraPrice) * item.quantity;
+  }, 0);
 
   return (
     <CartContext.Provider value={{

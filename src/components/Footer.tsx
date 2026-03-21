@@ -65,7 +65,8 @@ export const Footer = () => {
                 </div>
                 <div>
                   <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Localização</p>
-                  <p className="text-sm text-zinc-400 font-bold">Chapecó, SC</p>
+                  <p className="text-sm text-zinc-400 font-bold">Novo Horizonte, SC</p>
+                  <p className="text-[10px] text-zinc-500 font-medium">CEP: 89998-000</p>
                 </div>
               </li>
             </ul>
