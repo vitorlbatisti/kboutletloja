@@ -17,12 +17,15 @@ export const ProductDetails = () => {
   const [personalizacaoNumero, setPersonalizacaoNumero] = useState('');
   const [added, setAdded] = useState(false);
 
+  const [activeImage, setActiveImage] = useState<string>('');
+
   useEffect(() => {
     if (!id) return;
     const fetchProduct = async () => {
       const { data } = await supabase.from('produtos').select('*').eq('id', id).single();
       if (data) {
         setProduct(data);
+        setActiveImage(data.imagem_url);
         if (data.tamanhos?.length > 0) setSelectedSize(data.tamanhos[0]);
       }
       setLoading(false);
@@ -75,13 +78,40 @@ export const ProductDetails = () => {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="aspect-[4/5] md:aspect-auto md:h-[600px] rounded-2xl overflow-hidden bg-secondary border border-white/5 shadow-2xl"
+          className="space-y-6"
         >
-          <img 
-            src={product.imagem_url} 
-            alt={product.nome} 
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
-          />
+          <div className="aspect-[4/5] md:aspect-auto md:h-[600px] rounded-2xl overflow-hidden bg-secondary border border-white/5 shadow-2xl">
+            <img 
+              src={activeImage} 
+              alt={product.nome} 
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
+            />
+          </div>
+
+          {/* Thumbnails */}
+          {product.imagens_adicionais && product.imagens_adicionais.length > 0 && (
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              <button
+                onClick={() => setActiveImage(product.imagem_url)}
+                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                  activeImage === product.imagem_url ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'
+                }`}
+              >
+                <img src={product.imagem_url} alt="Principal" className="w-full h-full object-cover" />
+              </button>
+              {product.imagens_adicionais.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(img)}
+                  className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    activeImage === img ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'
+                  }`}
+                >
+                  <img src={img} alt={`Extra ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         <motion.div 

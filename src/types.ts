@@ -12,6 +12,7 @@ export interface Product {
   descricao: string;
   tamanhos: string[]; // Store as array of strings
   imagem_url: string;
+  imagens_adicionais?: string[]; // Multiple images support
   categoria_id: string;
   destaque: boolean;
   permite_personalizacao?: boolean;

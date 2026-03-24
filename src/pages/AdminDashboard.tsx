@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Product, Category, Order } from '../types';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw, Calendar, Search } from 'lucide-react';
 
-const AVAILABLE_SIZES = ['P', 'M', 'G', 'XG', 'XXG'];
+const AVAILABLE_SIZES = ['P', 'M', 'G', 'G1', 'G2', 'G3'];
 
 export const AdminDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [dateFilter, setDateFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'orders'>('products');
   const navigate = useNavigate();
@@ -21,12 +22,15 @@ export const AdminDashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [additionalImageFiles, setAdditionalImageFiles] = useState<(File | null)[]>([null, null]);
+  const [additionalImagePreviews, setAdditionalImagePreviews] = useState<(string | null)[]>([null, null]);
   const [formData, setFormData] = useState({
     nome: '',
     preco: '',
     descricao: '',
     tamanhos: '',
     imagem_url: '',
+    imagens_adicionais: [] as string[],
     categoria_id: '',
     destaque: false,
     permite_personalizacao: false,
@@ -145,44 +149,59 @@ export const AdminDashboard = () => {
 
       // 1. Handle Image Upload if a new file is selected
       if (imageFile) {
-        console.log('Iniciando upload de arquivo:', imageFile.name);
+        console.log('Iniciando upload de arquivo principal:', imageFile.name);
         try {
           const fileExt = imageFile.name.split('.').pop();
           const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
           const filePath = `${fileName}`;
 
-          console.log('Caminho do arquivo no storage:', filePath);
-
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('produtos')
-            .upload(filePath, imageFile, {
-              cacheControl: '3600',
-              upsert: false
-            });
+            .upload(filePath, imageFile);
 
-          if (uploadError) {
-            console.error('Erro retornado pelo Supabase Storage:', uploadError);
-            if (uploadError.message.includes('bucket not found') || (uploadError as any).status === 404) {
-              throw new Error('O bucket "produtos" não existe no seu Storage. Crie um bucket público chamado "produtos" no painel do Supabase.');
-            }
-            throw new Error(`Falha no upload: ${uploadError.message}`);
-          }
+          if (uploadError) throw uploadError;
 
-          console.log('Upload bem-sucedido:', uploadData);
           const { data: { publicUrl } } = supabase.storage
             .from('produtos')
             .getPublicUrl(filePath);
           
           finalImageUrl = publicUrl;
-          console.log('URL pública gerada:', finalImageUrl);
         } catch (uploadErr: any) {
-          console.error('Exceção capturada durante upload:', uploadErr);
-          throw new Error(`Erro técnico no upload: ${uploadErr.message || 'Verifique sua conexão e o console do navegador.'}`);
+          throw new Error(`Erro no upload da imagem principal: ${uploadErr.message}`);
+        }
+      }
+
+      // 1.5 Handle Additional Images
+      const finalAdditionalImageUrls = [...formData.imagens_adicionais];
+      
+      for (let i = 0; i < additionalImageFiles.length; i++) {
+        const file = additionalImageFiles[i];
+        if (file) {
+          console.log(`Iniciando upload de imagem adicional ${i + 1}:`, file.name);
+          try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}-extra-${i}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('produtos')
+              .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('produtos')
+              .getPublicUrl(filePath);
+            
+            finalAdditionalImageUrls[i] = publicUrl;
+          } catch (uploadErr: any) {
+            throw new Error(`Erro no upload da imagem adicional ${i + 1}: ${uploadErr.message}`);
+          }
         }
       }
 
       if (!finalImageUrl || finalImageUrl.trim() === '') {
-        throw new Error('Por favor, selecione uma imagem do seu dispositivo.');
+        throw new Error('Por favor, selecione pelo menos uma imagem principal.');
       }
 
       // 2. Prepare Payload
@@ -199,6 +218,7 @@ export const AdminDashboard = () => {
         descricao: formData.descricao.trim(),
         tamanhos: formData.tamanhos.split(',').map(s => s.trim()).filter(s => s !== ''),
         imagem_url: finalImageUrl.trim(),
+        imagens_adicionais: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
         categoria_id: formData.categoria_id || null,
         destaque: formData.destaque,
         permite_personalizacao: formData.permite_personalizacao,
@@ -241,12 +261,15 @@ export const AdminDashboard = () => {
       setEditingId(null);
       setImageFile(null);
       setImagePreview(null);
+      setAdditionalImageFiles([null, null]);
+      setAdditionalImagePreviews([null, null]);
       setFormData({ 
         nome: '', 
         preco: '', 
         descricao: '', 
         tamanhos: '', 
         imagem_url: '', 
+        imagens_adicionais: [],
         categoria_id: '', 
         destaque: false,
         permite_personalizacao: false,
@@ -263,7 +286,7 @@ export const AdminDashboard = () => {
   };
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'product' | 'category' } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'product' | 'category' | 'order' } | null>(null);
 
   const handleDeleteProduct = async (id: string) => {
     setItemToDelete({ id, type: 'product' });
@@ -275,7 +298,11 @@ export const AdminDashboard = () => {
     
     const { id, type } = itemToDelete;
     try {
-      const table = type === 'product' ? 'produtos' : 'categorias';
+      let table = '';
+      if (type === 'product') table = 'produtos';
+      else if (type === 'category') table = 'categorias';
+      else if (type === 'order') table = 'pedidos_v1';
+
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
       
@@ -301,12 +328,18 @@ export const AdminDashboard = () => {
       descricao: p.descricao,
       tamanhos: p.tamanhos.join(', '),
       imagem_url: p.imagem_url,
+      imagens_adicionais: p.imagens_adicionais || [],
       categoria_id: p.categoria_id,
       destaque: p.destaque || false,
       permite_personalizacao: p.permite_personalizacao || false,
       preco_personalizacao: formatCurrency(((p.preco_personalizacao || 0) * 100).toFixed(0))
     });
     setImagePreview(p.imagem_url);
+    setAdditionalImagePreviews([
+      (p.imagens_adicionais && p.imagens_adicionais[0]) || null,
+      (p.imagens_adicionais && p.imagens_adicionais[1]) || null
+    ]);
+    setAdditionalImageFiles([null, null]);
     setIsModalOpen(true);
   };
 
@@ -316,6 +349,33 @@ export const AdminDashboard = () => {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleAdditionalFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const newFiles = [...additionalImageFiles];
+      newFiles[index] = file;
+      setAdditionalImageFiles(newFiles);
+
+      const newPreviews = [...additionalImagePreviews];
+      newPreviews[index] = URL.createObjectURL(file);
+      setAdditionalImagePreviews(newPreviews);
+    }
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    const newFiles = [...additionalImageFiles];
+    newFiles[index] = null;
+    setAdditionalImageFiles(newFiles);
+
+    const newPreviews = [...additionalImagePreviews];
+    newPreviews[index] = null;
+    setAdditionalImagePreviews(newPreviews);
+
+    const newUrls = [...formData.imagens_adicionais];
+    newUrls[index] = '';
+    setFormData({ ...formData, imagens_adicionais: newUrls.filter(url => url !== '') });
   };
 
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
@@ -397,6 +457,11 @@ export const AdminDashboard = () => {
     } catch (err: any) {
       alert('Erro ao atualizar status: ' + err.message);
     }
+  };
+
+  const handleDeleteOrder = async (id: string) => {
+    setItemToDelete({ id, type: 'order' });
+    setIsDeleteModalOpen(true);
   };
 
   if (loading) {
@@ -584,12 +649,35 @@ export const AdminDashboard = () => {
         </div>
       ) : (
         <div className="space-y-6 relative z-10">
-          <h2 className="text-3xl font-bebas tracking-wide">Lista de Pedidos</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-3xl font-bebas tracking-wide">Lista de Pedidos</h2>
+            <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+              <div className="relative flex-1 sm:flex-none">
+                <input 
+                  type="date" 
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full sm:w-48 px-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-white/30 outline-none text-xs font-bold uppercase tracking-[0.1em] transition-all appearance-none"
+                />
+                <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                {dateFilter && (
+                  <button 
+                    onClick={() => setDateFilter('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                  >
+                    <XCircle size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-secondary rounded-2xl border border-white/10 overflow-hidden glass-effect">
             <div className="overflow-x-auto">
               <table className="w-full text-left min-w-[700px] sm:min-w-0">
                 <thead>
                   <tr className="border-b border-white/10 text-muted text-[10px] font-bold uppercase tracking-[0.3em]">
+                    <th className="px-8 py-6">Data</th>
                     <th className="px-8 py-6">Cliente</th>
                     <th className="px-8 py-6">Itens</th>
                     <th className="px-8 py-6">Total</th>
@@ -598,8 +686,17 @@ export const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {orders.map(o => (
+                  {orders
+                    .filter(o => {
+                      if (!dateFilter) return true;
+                      const orderDate = new Date(o.created_at).toISOString().split('T')[0];
+                      return orderDate === dateFilter;
+                    })
+                    .map(o => (
                     <tr key={o.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-8 py-6 text-muted text-[10px] font-bold uppercase tracking-wider">
+                        {new Date(o.created_at).toLocaleDateString('pt-BR')}
+                      </td>
                       <td className="px-8 py-6">
                         <div className="font-bold text-white text-base">{o.cliente_nome}</div>
                         <div className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mt-1">{o.cliente_whatsapp}</div>
@@ -622,9 +719,17 @@ export const AdminDashboard = () => {
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end gap-3">
-                          <button onClick={() => handleUpdateOrderStatus(o.id, 'pago')} title="Marcar como Pago" className="p-2 hover:text-emerald-500 text-muted transition-colors"><CheckCircle size={20} /></button>
-                          <button onClick={() => handleUpdateOrderStatus(o.id, 'enviado')} title="Marcar como Enviado" className="p-2 hover:text-blue-500 text-muted transition-colors"><Truck size={20} /></button>
-                          <button onClick={() => handleUpdateOrderStatus(o.id, 'cancelado')} title="Cancelar" className="p-2 hover:text-red-500 text-muted transition-colors"><XCircle size={20} /></button>
+                          {o.status !== 'pago' && o.status !== 'enviado' && o.status !== 'cancelado' && (
+                            <button onClick={() => handleUpdateOrderStatus(o.id, 'pago')} title="Marcar como Pago" className="p-2 hover:text-emerald-500 text-muted transition-colors"><CheckCircle size={20} /></button>
+                          )}
+                          {o.status === 'pago' && (
+                            <button onClick={() => handleUpdateOrderStatus(o.id, 'enviado')} title="Marcar como Enviado" className="p-2 hover:text-blue-500 text-muted transition-colors"><Truck size={20} /></button>
+                          )}
+                          {o.status !== 'cancelado' ? (
+                            <button onClick={() => handleUpdateOrderStatus(o.id, 'cancelado')} title="Cancelar" className="p-2 hover:text-red-500 text-muted transition-colors"><XCircle size={20} /></button>
+                          ) : (
+                            <button onClick={() => handleDeleteOrder(o.id)} title="Excluir Pedido" className="p-2 hover:text-red-500 text-muted transition-colors"><Trash2 size={20} /></button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -702,8 +807,8 @@ export const AdminDashboard = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-6 pt-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative inline-flex items-center cursor-pointer">
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
                     <input 
                       type="checkbox" 
                       id="destaque"
@@ -713,10 +818,10 @@ export const AdminDashboard = () => {
                     />
                     <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                   </div>
-                  <label htmlFor="destaque" className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] cursor-pointer">Destaque</label>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="relative inline-flex items-center cursor-pointer">
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors">Destaque</span>
+                </label>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
                     <input 
                       type="checkbox" 
                       id="permite_personalizacao"
@@ -726,8 +831,8 @@ export const AdminDashboard = () => {
                     />
                     <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
                   </div>
-                  <label htmlFor="permite_personalizacao" className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] cursor-pointer">Personalização</label>
-                </div>
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors">Personalização</span>
+                </label>
               </div>
               {formData.permite_personalizacao && (
                 <div className="space-y-3 md:col-span-2">
@@ -741,27 +846,51 @@ export const AdminDashboard = () => {
                   />
                 </div>
               )}
-              <div className="space-y-3 md:col-span-2">
-                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Imagem do Produto</label>
-                <div className="flex flex-col gap-4">
-                  <div className="w-full aspect-video bg-black/50 border border-white/10 rounded-[2rem] overflow-hidden flex items-center justify-center relative group shadow-inner">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-4 text-muted/30">
-                        <ImageIcon size={48} strokeWidth={1} />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Upload Imagem</span>
-                      </div>
-                    )}
-                    <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer backdrop-blur-sm">
-                      <div className="px-8 py-3 bg-white text-black text-xs font-bold rounded-full uppercase tracking-[0.2em] shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                        {imagePreview ? 'Alterar Imagem' : 'Selecionar Arquivo'}
-                      </div>
-                      <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                    </label>
+              <div className="space-y-6 md:col-span-2">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Imagens do Produto</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Main Image */}
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-muted/50 uppercase tracking-[0.2em] ml-1">Principal</span>
+                    <div className="aspect-square bg-black/50 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center relative group shadow-inner">
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon size={24} className="text-muted/20" />
+                      )}
+                      <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer backdrop-blur-sm">
+                        <Plus size={20} className="text-white" />
+                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                      </label>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-muted/30 uppercase tracking-[0.2em] text-center">JPG, PNG ou WEBP • Recomendado: 1080x1080px</p>
+
+                  {/* Additional Images */}
+                  {additionalImagePreviews.map((preview, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center px-1">
+                        <span className="text-[9px] font-bold text-muted/50 uppercase tracking-[0.2em]">Extra {index + 1}</span>
+                        {preview && (
+                          <button type="button" onClick={() => removeAdditionalImage(index)} className="text-red-500 hover:text-red-400 transition-colors">
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="aspect-square bg-black/50 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center relative group shadow-inner">
+                        {preview ? (
+                          <img src={preview} alt={`Extra ${index + 1}`} className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon size={24} className="text-muted/20" />
+                        )}
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer backdrop-blur-sm">
+                          <Plus size={20} className="text-white" />
+                          <input type="file" accept="image/*" onChange={(e) => handleAdditionalFileChange(index, e)} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+                <p className="text-[10px] text-muted/30 uppercase tracking-[0.2em] text-center">JPG, PNG ou WEBP • Recomendado: 1080x1080px</p>
               </div>
               <div className="md:col-span-2 flex justify-end gap-8 mt-10">
                 <button type="button" onClick={() => { setIsModalOpen(false); setImageFile(null); setImagePreview(null); }} className="text-muted hover:text-white font-bold uppercase tracking-[0.2em] text-xs transition-colors">Cancelar</button>
@@ -845,7 +974,7 @@ export const AdminDashboard = () => {
             </div>
             <h2 className="text-4xl mb-4 font-bebas tracking-wide">Confirmar Exclusão</h2>
             <p className="text-muted text-sm font-medium mb-10 leading-relaxed px-4">
-              Tem certeza que deseja excluir este {itemToDelete?.type === 'product' ? 'produto' : 'categoria'}? 
+              Tem certeza que deseja excluir este {itemToDelete?.type === 'product' ? 'produto' : itemToDelete?.type === 'category' ? 'categoria' : 'pedido'}? 
               {itemToDelete?.type === 'category' && ' Isso pode afetar produtos vinculados.'}
               <br />
               <span className="text-red-500 font-bold uppercase tracking-[0.2em] text-[10px] mt-2 block">Esta ação é irreversível.</span>
