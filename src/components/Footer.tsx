@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
+import { MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const Footer = () => {
@@ -17,17 +17,6 @@ export const Footer = () => {
             <p className="text-muted text-lg font-medium max-w-md leading-relaxed">
               Elevando o streetwear ao patamar de luxo. Curadoria exclusiva das melhores marcas e peças outlet premium para quem não aceita o comum.
             </p>
-            <div className="flex gap-6 mt-10">
-              <motion.a 
-                whileHover={{ y: -5 }}
-                href="https://www.instagram.com/k.b_outlet/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-muted hover:text-white hover:bg-zinc-800 transition-all border border-white/5"
-              >
-                <Instagram size={20} />
-              </motion.a>
-            </div>
           </div>
           
           <div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { motion } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { Plus, Star } from 'lucide-react';
 
 export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   return (
@@ -21,10 +21,9 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
         
         {product.destaque && (
-          <div className="absolute top-4 left-4 z-20 px-3 py-1 glass-effect rounded-full">
-            <span className="text-[9px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-              <span className="w-1 h-1 bg-glow-red rounded-full animate-pulse" />
-              Destaque
+          <div className="absolute top-4 left-4 z-20 px-2.5 py-1.5 glass-effect rounded-full shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+            <span className="text-amber-500 flex items-center justify-center">
+              <Star size={16} fill="currentColor" />
             </span>
           </div>
         )}
@@ -38,22 +37,18 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       </Link>
       
       <div className="p-4">
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex-grow">
-            <Link to={`/produto/${product.id}`}>
-              <h3 className="text-sm font-bold text-accent group-hover:text-white transition-colors line-clamp-1 tracking-tight">
-                {product.nome}
-              </h3>
-            </Link>
-            <p className="text-[10px] text-muted mt-1 uppercase tracking-[0.2em] font-bold">
-              Outlet Premium
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-base font-black text-white tracking-tighter">
-              R$ {product.preco.toFixed(2)}
-            </p>
-          </div>
+        <Link to={`/produto/${product.id}`}>
+          <h3 className="text-[12px] font-bold text-accent group-hover:text-white transition-colors leading-tight tracking-tight mb-2">
+            {product.nome}
+          </h3>
+        </Link>
+        <div className="flex justify-between items-center">
+          <p className="text-[9px] text-muted uppercase tracking-[0.2em] font-bold">
+            Outlet Premium
+          </p>
+          <p className="text-sm font-black text-white tracking-tighter">
+            R$ {product.preco.toFixed(2)}
+          </p>
         </div>
       </div>
     </motion.div>

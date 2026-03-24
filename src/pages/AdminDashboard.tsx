@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Product, Category, Order } from '../types';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw, Calendar, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw, Calendar, Search, Star } from 'lucide-react';
 
 const AVAILABLE_SIZES = ['P', 'M', 'G', 'G1', 'G2', 'G3'];
 
@@ -580,9 +580,9 @@ export const AdminDashboard = () => {
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-white truncate max-w-[120px] sm:max-w-none text-base">{p.nome}</span>
                             {p.destaque && (
-                              <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1 mt-1">
-                                ★ Destaque
-                              </span>
+                              <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500 w-fit mt-1" title="Destaque">
+                                <Star size={16} fill="currentColor" />
+                              </div>
                             )}
                           </div>
                         </div>
@@ -818,7 +818,10 @@ export const AdminDashboard = () => {
                     />
                     <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                   </div>
-                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors">Destaque</span>
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors flex items-center gap-2">
+                    <Star size={12} fill={formData.destaque ? "currentColor" : "none"} className={formData.destaque ? "text-amber-500" : "text-muted"} />
+                    Destaque
+                  </span>
                 </label>
                 <label className="flex items-center gap-4 cursor-pointer group">
                   <div className="relative inline-flex items-center">

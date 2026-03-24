@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 import { useCart } from '../CartContext';
 import { motion } from 'motion/react';
-import { ShoppingBag, ArrowLeft, Check } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Check, Star } from 'lucide-react';
 
 export const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -120,9 +120,16 @@ export const ProductDetails = () => {
           className="flex flex-col"
         >
           <div className="mb-8">
-            <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase mb-4 text-emerald-500">
-              Disponível em Estoque
-            </span>
+            <div className="flex flex-wrap gap-3 mb-4">
+              <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase text-emerald-500">
+                Disponível em Estoque
+              </span>
+              {product.destaque && (
+                <span className="inline-block px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase text-amber-500 flex items-center gap-1 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                  <Star size={14} fill="currentColor" />
+                </span>
+              )}
+            </div>
             <h1 className="text-3xl md:text-5xl mb-3 leading-tight text-white">{product.nome}</h1>
             <div className="flex items-center gap-4">
               <p className="text-2xl font-black text-white tracking-tighter">R$ {product.preco.toFixed(2)}</p>
