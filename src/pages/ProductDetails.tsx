@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 import { useCart } from '../CartContext';
 import { motion } from 'motion/react';
-import { ShoppingBag, ArrowLeft, Check, Star } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Check, Star, Truck } from 'lucide-react';
 
 export const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +13,7 @@ export const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
   const [personalizacaoTexto, setPersonalizacaoTexto] = useState('');
   const [personalizacaoNumero, setPersonalizacaoNumero] = useState('');
   const [added, setAdded] = useState(false);
@@ -27,6 +28,7 @@ export const ProductDetails = () => {
         setProduct(data);
         setActiveImage(data.imagem_url);
         if (data.tamanhos?.length > 0) setSelectedSize(data.tamanhos[0]);
+        if (data.permite_cores && data.cores?.length > 0) setSelectedColor(data.cores[0]);
       }
       setLoading(false);
     };
@@ -35,7 +37,8 @@ export const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
-    addToCart(product, selectedSize, personalizacaoTexto, personalizacaoNumero);
+    if (product.permite_cores && !selectedColor) return;
+    addToCart(product, selectedSize, selectedColor, personalizacaoTexto, personalizacaoNumero);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -160,6 +163,27 @@ export const ProductDetails = () => {
             </div>
           </div>
 
+          {product.permite_cores && product.cores && product.cores.length > 0 && (
+            <div className="mb-10">
+              <h3 className="text-[10px] uppercase tracking-[0.3em] text-muted mb-4">Selecione a Cor</h3>
+              <div className="flex flex-wrap gap-3">
+                {product.cores.map(color => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`px-6 h-14 flex items-center justify-center rounded-xl border-2 font-black transition-all duration-300 text-sm uppercase tracking-widest ${
+                      selectedColor === color 
+                        ? 'bg-white text-black border-white shadow-xl scale-105' 
+                        : 'bg-secondary text-muted border-white/5 hover:border-white/20'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {product.permite_personalizacao && (
             <div className="mb-10 space-y-5 p-6 bg-secondary/50 rounded-2xl border border-white/5">
               <h3 className="text-[10px] uppercase tracking-[0.3em] text-white">Personalização (+ R$ {product.preco_personalizacao?.toFixed(2)})</h3>
@@ -186,6 +210,14 @@ export const ProductDetails = () => {
                   className="w-full px-6 py-4 bg-secondary border border-white/10 rounded-2xl focus:border-white/30 outline-none text-base font-black transition-all placeholder:text-zinc-800 text-white"
                 />
               </div>
+            </div>
+          )}
+
+          {product.entrega_rapida && (
+            <div className="mb-6 flex justify-center">
+              <span className="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-white rounded-full text-[10px] font-black tracking-[0.2em] uppercase text-black shadow-[0_0_20px_rgba(255,255,255,0.25)] whitespace-nowrap">
+                <Truck size={14} /> <span>Entrega Rápida</span>
+              </span>
             </div>
           )}
 

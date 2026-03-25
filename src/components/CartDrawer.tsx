@@ -34,7 +34,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         cart.map(item => {
           const hasPersonalization = item.personalizacao_texto || item.personalizacao_numero;
           const itemPrice = item.preco + (hasPersonalization ? (item.preco_personalizacao || 0) : 0);
-          let itemDesc = `- ${item.nome} (${item.selectedSize})`;
+          let itemDesc = `- ${item.nome} (${item.selectedSize}${item.selectedColor ? `, Cor: ${item.selectedColor}` : ''})`;
           
           if (hasPersonalization) {
             const parts = [];
@@ -118,7 +118,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    key={`${item.id}-${item.selectedSize}-${item.personalizacao_texto || 'none'}-${item.personalizacao_numero || 'none'}`} 
+                    key={`${item.id}-${item.selectedSize}-${item.selectedColor || 'none'}-${item.personalizacao_texto || 'none'}-${item.personalizacao_numero || 'none'}`} 
                     className="flex gap-4 group relative"
                   >
                     <div className="w-16 h-20 bg-zinc-950 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
@@ -127,7 +127,12 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     <div className="flex-1 flex flex-col justify-between py-0.5">
                       <div>
                         <h3 className="font-bold text-white tracking-tight text-sm line-clamp-1">{item.nome}</h3>
-                        <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold mt-0.5">Tamanho: {item.selectedSize}</p>
+                        <div className="flex flex-wrap gap-2 mt-0.5">
+                          <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Tamanho: {item.selectedSize}</p>
+                          {item.selectedColor && (
+                            <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Cor: {item.selectedColor}</p>
+                          )}
+                        </div>
                         {(item.personalizacao_texto || item.personalizacao_numero) && (
                           <div className="mt-1 space-y-0.5">
                             {item.personalizacao_texto && (
@@ -145,21 +150,21 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center bg-zinc-950 border border-white/5 rounded-full px-1.5 py-0.5">
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1, item.personalizacao_texto, item.personalizacao_numero)}
+                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Minus size={14} />
                           </button>
                           <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1, item.personalizacao_texto, item.personalizacao_numero)}
+                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Plus size={14} />
                           </button>
                         </div>
                         <button 
-                          onClick={() => removeFromCart(item.id, item.selectedSize, item.personalizacao_texto, item.personalizacao_numero)}
+                          onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
                           className="p-2 text-zinc-800 hover:text-red-500 transition-all hover:bg-red-500/10 rounded-full"
                         >
                           <Trash2 size={16} />

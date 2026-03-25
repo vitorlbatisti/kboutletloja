@@ -17,11 +17,15 @@ export interface Product {
   destaque: boolean;
   permite_personalizacao?: boolean;
   preco_personalizacao?: number;
+  entrega_rapida?: boolean;
+  permite_cores?: boolean;
+  cores?: string[];
   created_at?: string;
 }
 
 export interface CartItem extends Product {
   selectedSize: string;
+  selectedColor?: string;
   quantity: number;
   personalizacao_texto?: string;
   personalizacao_numero?: string;

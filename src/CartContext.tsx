@@ -4,9 +4,9 @@ import { CartItem, Product } from './types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
-  removeFromCart: (productId: string, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
-  updateQuantity: (productId: string, size: string, quantity: number, personalizacao_texto?: string, personalizacao_numero?: string) => void;
+  addToCart: (product: Product, size: string, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
+  removeFromCart: (productId: string, size: string, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
+  updateQuantity: (productId: string, size: string, quantity: number, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -36,11 +36,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart, isInitialized]);
 
-  const addToCart = (product: Product, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
+  const addToCart = (product: Product, size: string, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
     setCart(prev => {
       const existing = prev.find(item => 
         item.id === product.id && 
         item.selectedSize === size && 
+        item.selectedColor === color &&
         item.personalizacao_texto === personalizacao_texto &&
         item.personalizacao_numero === personalizacao_numero
       );
@@ -48,34 +49,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return prev.map(item =>
           item.id === product.id && 
           item.selectedSize === size && 
+          item.selectedColor === color &&
           item.personalizacao_texto === personalizacao_texto &&
           item.personalizacao_numero === personalizacao_numero
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { ...product, selectedSize: size, quantity: 1, personalizacao_texto, personalizacao_numero }];
+      return [...prev, { ...product, selectedSize: size, selectedColor: color, quantity: 1, personalizacao_texto, personalizacao_numero }];
     });
   };
 
-  const removeFromCart = (productId: string, size: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
+  const removeFromCart = (productId: string, size: string, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
     setCart(prev => prev.filter(item => 
       !(item.id === productId && 
         item.selectedSize === size && 
+        item.selectedColor === color &&
         item.personalizacao_texto === personalizacao_texto &&
         item.personalizacao_numero === personalizacao_numero)
     ));
   };
 
-  const updateQuantity = (productId: string, size: string, quantity: number, personalizacao_texto?: string, personalizacao_numero?: string) => {
+  const updateQuantity = (productId: string, size: string, quantity: number, color?: string, personalizacao_texto?: string, personalizacao_numero?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId, size, personalizacao_texto, personalizacao_numero);
+      removeFromCart(productId, size, color, personalizacao_texto, personalizacao_numero);
       return;
     }
     setCart(prev =>
       prev.map(item =>
         item.id === productId && 
         item.selectedSize === size && 
+        item.selectedColor === color &&
         item.personalizacao_texto === personalizacao_texto &&
         item.personalizacao_numero === personalizacao_numero
           ? { ...item, quantity }

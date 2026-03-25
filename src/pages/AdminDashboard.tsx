@@ -34,7 +34,10 @@ export const AdminDashboard = () => {
     categoria_id: '',
     destaque: false,
     permite_personalizacao: false,
-    preco_personalizacao: '0,00'
+    preco_personalizacao: '0,00',
+    entrega_rapida: false,
+    permite_cores: false,
+    cores: ''
   });
 
   useEffect(() => {
@@ -222,7 +225,10 @@ export const AdminDashboard = () => {
         categoria_id: formData.categoria_id || null,
         destaque: formData.destaque,
         permite_personalizacao: formData.permite_personalizacao,
-        preco_personalizacao: parseFloat(formData.preco_personalizacao.replace(/\./g, '').replace(',', '.'))
+        preco_personalizacao: parseFloat(formData.preco_personalizacao.replace(/\./g, '').replace(',', '.')),
+        entrega_rapida: formData.entrega_rapida,
+        permite_cores: formData.permite_cores,
+        cores: formData.cores.split(',').map(c => c.trim()).filter(c => c !== '')
       };
 
       console.log('Payload preparado para o banco de dados:', payload);
@@ -273,7 +279,10 @@ export const AdminDashboard = () => {
         categoria_id: '', 
         destaque: false,
         permite_personalizacao: false,
-        preco_personalizacao: '0,00'
+        preco_personalizacao: '0,00',
+        entrega_rapida: false,
+        permite_cores: false,
+        cores: ''
       });
       loadDashboardData();
       alert('Produto salvo com sucesso!');
@@ -332,7 +341,10 @@ export const AdminDashboard = () => {
       categoria_id: p.categoria_id,
       destaque: p.destaque || false,
       permite_personalizacao: p.permite_personalizacao || false,
-      preco_personalizacao: formatCurrency(((p.preco_personalizacao || 0) * 100).toFixed(0))
+      preco_personalizacao: formatCurrency(((p.preco_personalizacao || 0) * 100).toFixed(0)),
+      entrega_rapida: p.entrega_rapida || false,
+      permite_cores: p.permite_cores || false,
+      cores: p.cores ? p.cores.join(', ') : ''
     });
     setImagePreview(p.imagem_url);
     setAdditionalImagePreviews([
@@ -553,7 +565,7 @@ export const AdminDashboard = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-3xl font-bebas tracking-wide">Lista de Produtos</h2>
             <button 
-              onClick={() => { setEditingId(null); setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', categoria_id: '', destaque: false, permite_personalizacao: false, preco_personalizacao: '0,00' }); setIsModalOpen(true); }}
+              onClick={() => { setEditingId(null); setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', imagens_adicionais: [], categoria_id: '', destaque: false, permite_personalizacao: false, preco_personalizacao: '0,00', entrega_rapida: false, permite_cores: false, cores: '' }); setIsModalOpen(true); }}
               className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all w-full sm:w-auto justify-center shadow-2xl uppercase tracking-[0.2em] text-xs"
             >
               <Plus size={18} /> Novo Produto
@@ -836,7 +848,48 @@ export const AdminDashboard = () => {
                   </div>
                   <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors">Personalização</span>
                 </label>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
+                    <input 
+                      type="checkbox" 
+                      id="entrega_rapida"
+                      checked={formData.entrega_rapida} 
+                      onChange={e => setFormData({...formData, entrega_rapida: e.target.checked})}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors flex items-center gap-2">
+                    <Truck size={12} className={formData.entrega_rapida ? "text-emerald-500" : "text-muted"} />
+                    Entrega Rápida
+                  </span>
+                </label>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
+                    <input 
+                      type="checkbox" 
+                      id="permite_cores"
+                      checked={formData.permite_cores} 
+                      onChange={e => setFormData({...formData, permite_cores: e.target.checked})}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover:text-white transition-colors">Opções de Cores</span>
+                </label>
               </div>
+              {formData.permite_cores && (
+                <div className="space-y-3 md:col-span-2">
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Cores (separadas por vírgula)</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Preto, Branco, Azul" 
+                    value={formData.cores} 
+                    onChange={e => setFormData({...formData, cores: e.target.value})} 
+                    className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all placeholder:text-muted/30" 
+                  />
+                </div>
+              )}
               {formData.permite_personalizacao && (
                 <div className="space-y-3 md:col-span-2">
                   <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Valor Adicional (R$)</label>

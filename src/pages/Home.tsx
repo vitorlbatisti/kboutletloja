@@ -39,7 +39,7 @@ export const Home = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setItemsPerView(1.2);
+        setItemsPerView(2.1);
         setCatItemsPerView(1.2);
       } else if (window.innerWidth < 1024) {
         setItemsPerView(3);
@@ -55,19 +55,27 @@ export const Home = () => {
   }, []);
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
+    const maxIndex = Math.max(0, featuredProducts.length - Math.floor(itemsPerView));
+    if (maxIndex === 0) return;
+    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length);
+    const maxIndex = Math.max(0, featuredProducts.length - Math.floor(itemsPerView));
+    if (maxIndex === 0) return;
+    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
   };
 
   const nextCategory = () => {
-    setCategoryIndex((prev) => (prev + 1) % categories.length);
+    const maxIndex = Math.max(0, categories.length - Math.floor(catItemsPerView));
+    if (maxIndex === 0) return;
+    setCategoryIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
 
   const prevCategory = () => {
-    setCategoryIndex((prev) => (prev - 1 + categories.length) % categories.length);
+    const maxIndex = Math.max(0, categories.length - Math.floor(catItemsPerView));
+    if (maxIndex === 0) return;
+    setCategoryIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
   };
 
   return (
@@ -144,20 +152,20 @@ export const Home = () => {
         </div>
 
         {loading ? (
-          <div className="flex gap-6 overflow-hidden">
+          <div className="flex gap-4 overflow-hidden">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="min-w-[260px] w-[70%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] aspect-[3/4] bg-zinc-950 animate-pulse rounded-[2rem] border border-white/5 shrink-0" />
+              <div key={i} className="min-w-[160px] w-[45%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] aspect-[3/4] bg-zinc-950 animate-pulse rounded-[2rem] border border-white/5 shrink-0" />
             ))}
           </div>
         ) : (
           <div className="relative overflow-hidden">
             <motion.div 
-              className="flex gap-6"
-              animate={{ x: `calc(-${currentIndex * 100}% / ${itemsPerView} - ${currentIndex * (24 / itemsPerView)}px)` }}
+              className="flex gap-4"
+              animate={{ x: `calc(-${currentIndex * 100}% / ${itemsPerView} - ${currentIndex * (16 / itemsPerView)}px)` }}
               transition={{ type: "spring", damping: 25, stiffness: 120 }}
             >
               {featuredProducts.map(product => (
-                <div key={product.id} className="min-w-[260px] w-[70%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] shrink-0">
+                <div key={product.id} className="min-w-[160px] w-[45%] md:w-[calc(33.333%-1rem)] lg:w-[calc(20%-1rem)] max-w-[280px] shrink-0">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -198,7 +206,7 @@ export const Home = () => {
             {categories.map((category, idx) => (
               <motion.div
                 key={category.id}
-                className="min-w-full md:min-w-[calc(50%-0.75rem)] lg:min-w-[calc(33.333%-1rem)] group relative overflow-hidden rounded-[2rem] bg-zinc-950 border border-white/5 h-[300px]"
+                className="min-w-[85%] md:min-w-[calc(50%-0.75rem)] lg:min-w-[calc(33.333%-1rem)] group relative overflow-hidden rounded-[2rem] bg-zinc-950 border border-white/5 h-[300px] shrink-0"
               >
                 <Link 
                   to={`/catalogo?categoria=${category.id}`}
