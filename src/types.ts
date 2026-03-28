@@ -1,7 +1,15 @@
+export interface SubCategory {
+  id: string;
+  nome: string;
+  categoria_id: string;
+  created_at?: string;
+}
+
 export interface Category {
   id: string;
   nome: string;
   imagem_url?: string;
+  subcategories?: SubCategory[];
   created_at?: string;
 }
 
@@ -14,6 +22,7 @@ export interface Product {
   imagem_url: string;
   imagens_adicionais?: string[]; // Multiple images support
   categoria_id: string;
+  subcategoria_id?: string;
   destaque: boolean;
   permite_personalizacao?: boolean;
   preco_personalizacao?: number;

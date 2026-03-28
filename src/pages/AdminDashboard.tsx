@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Product, Category, Order } from '../types';
+import { Product, Category, Order, SubCategory } from '../types';
 import { motion } from 'motion/react';
 import { Plus, Edit2, Trash2, Package, Layers, LogOut, Image as ImageIcon, ShoppingCart, CheckCircle, Clock, Truck, XCircle, RefreshCw, Calendar, Search, Star } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const AVAILABLE_SIZES = ['P', 'M', 'G', 'G1', 'G2', 'G3'];
 export const AdminDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [dateFilter, setDateFilter] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,7 @@ export const AdminDashboard = () => {
     imagem_url: '',
     imagens_adicionais: [] as string[],
     categoria_id: '',
+    subcategoria_id: '',
     destaque: false,
     permite_personalizacao: false,
     preco_personalizacao: '0,00',
@@ -69,6 +71,17 @@ export const AdminDashboard = () => {
       } else {
         console.log(`Sucesso: ${catRes.data?.length || 0} categorias encontradas.`);
         if (catRes.data) setCategories(catRes.data);
+      }
+
+      // Fetch subcategories
+      console.log('Buscando subcategorias...');
+      const subRes = await supabase.from('subcategorias').select('*').order('nome');
+      if (subRes.error) {
+        console.warn('Tabela subcategorias não encontrada ou erro ao carregar:', subRes.error.message);
+        setSubcategories([]);
+      } else {
+        console.log(`Sucesso: ${subRes.data?.length || 0} subcategorias encontradas.`);
+        if (subRes.data) setSubcategories(subRes.data);
       }
 
       // Fetch orders
@@ -223,6 +236,7 @@ export const AdminDashboard = () => {
         imagem_url: finalImageUrl.trim(),
         imagens_adicionais: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
         categoria_id: formData.categoria_id || null,
+        subcategoria_id: formData.subcategoria_id || null,
         destaque: formData.destaque,
         permite_personalizacao: formData.permite_personalizacao,
         preco_personalizacao: parseFloat(formData.preco_personalizacao.replace(/\./g, '').replace(',', '.')),
@@ -277,6 +291,7 @@ export const AdminDashboard = () => {
         imagem_url: '', 
         imagens_adicionais: [],
         categoria_id: '', 
+        subcategoria_id: '',
         destaque: false,
         permite_personalizacao: false,
         preco_personalizacao: '0,00',
@@ -311,6 +326,7 @@ export const AdminDashboard = () => {
       if (type === 'product') table = 'produtos';
       else if (type === 'category') table = 'categorias';
       else if (type === 'order') table = 'pedidos_v1';
+      else if (type === 'subcategory' as any) table = 'subcategorias';
 
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
@@ -339,6 +355,7 @@ export const AdminDashboard = () => {
       imagem_url: p.imagem_url,
       imagens_adicionais: p.imagens_adicionais || [],
       categoria_id: p.categoria_id,
+      subcategoria_id: p.subcategoria_id || '',
       destaque: p.destaque || false,
       permite_personalizacao: p.permite_personalizacao || false,
       preco_personalizacao: formatCurrency(((p.preco_personalizacao || 0) * 100).toFixed(0)),
@@ -392,10 +409,53 @@ export const AdminDashboard = () => {
 
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
-  const [catFormData, setCatFormData] = useState({ nome: '', imagem_url: '' });
+  const [catFormData, setCatFormData] = useState({ nome: '', imagem_url: '', subcategorias: [] as string[] });
+  const [newSubCatName, setNewSubCatName] = useState('');
   const [catImageFile, setCatImageFile] = useState<File | null>(null);
   const [catImagePreview, setCatImagePreview] = useState<string | null>(null);
   const [catUploading, setCatUploading] = useState(false);
+
+  const [isSubCatModalOpen, setIsSubCatModalOpen] = useState(false);
+  const [editingSubCatId, setEditingSubCatId] = useState<string | null>(null);
+  const [subCatFormData, setSubCatFormData] = useState({ nome: '', categoria_id: '' });
+  const [subCatUploading, setSubCatUploading] = useState(false);
+
+  const handleSaveSubCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubCatUploading(true);
+    console.log('Iniciando salvamento de subcategoria:', subCatFormData);
+    try {
+      const payload = {
+        nome: subCatFormData.nome,
+        categoria_id: subCatFormData.categoria_id
+      };
+
+      if (editingSubCatId) {
+        console.log('Atualizando subcategoria ID:', editingSubCatId);
+        const { error } = await supabase.from('subcategorias').update(payload).eq('id', editingSubCatId);
+        if (error) throw error;
+      } else {
+        console.log('Inserindo nova subcategoria:', payload);
+        const { error } = await supabase.from('subcategorias').insert([payload]);
+        if (error) throw error;
+      }
+      console.log('Subcategoria salva com sucesso!');
+      setIsSubCatModalOpen(false);
+      setEditingSubCatId(null);
+      setSubCatFormData({ nome: '', categoria_id: '' });
+      loadDashboardData();
+    } catch (err: any) {
+      console.error('Erro ao salvar subcategoria:', err);
+      alert('Erro ao salvar subcategoria: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setSubCatUploading(false);
+    }
+  };
+
+  const handleDeleteSubCategory = async (id: string) => {
+    setItemToDelete({ id, type: 'subcategory' as any });
+    setIsDeleteModalOpen(true);
+  };
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,27 +492,65 @@ export const AdminDashboard = () => {
         imagem_url: finalImageUrl
       };
 
+      let categoryId = editingCatId;
+
       if (editingCatId) {
         console.log('Atualizando categoria ID:', editingCatId);
         const { error } = await supabase.from('categorias').update(payload).eq('id', editingCatId);
         if (error) throw error;
       } else {
         console.log('Inserindo nova categoria:', payload);
-        const { error } = await supabase.from('categorias').insert([payload]);
+        const { data, error } = await supabase.from('categorias').insert([payload]).select().single();
         if (error) {
           if (error.code === '23505') {
             throw new Error('Já existe uma categoria com este nome.');
           }
           throw error;
         }
+        categoryId = data.id;
+        console.log('Nova categoria criada com ID:', categoryId);
       }
-      console.log('Categoria salva com sucesso!');
+
+      // Handle Subcategories
+      if (categoryId) {
+        // Get current subcategories from DB
+        const { data: currentSubCats } = await supabase
+          .from('subcategorias')
+          .select('nome')
+          .eq('categoria_id', categoryId);
+        
+        const currentNames = currentSubCats?.map(s => s.nome) || [];
+        const targetNames = catFormData.subcategorias.map(s => s.trim()).filter(s => s !== '');
+
+        // Names to add
+        const toAdd = targetNames.filter(name => !currentNames.includes(name));
+        // Names to remove
+        const toRemove = currentNames.filter(name => !targetNames.includes(name));
+
+        if (toAdd.length > 0) {
+          const { error: addError } = await supabase
+            .from('subcategorias')
+            .insert(toAdd.map(nome => ({ nome, categoria_id: categoryId })));
+          if (addError) throw addError;
+        }
+
+        if (toRemove.length > 0) {
+          const { error: removeError } = await supabase
+            .from('subcategorias')
+            .delete()
+            .eq('categoria_id', categoryId)
+            .in('nome', toRemove);
+          if (removeError) throw removeError;
+        }
+      }
+
+      console.log('Categoria e subcategorias salvas com sucesso!');
       setIsCatModalOpen(false);
       setEditingCatId(null);
-      setCatFormData({ nome: '', imagem_url: '' });
+      setCatFormData({ nome: '', imagem_url: '', subcategorias: [] });
       setCatImageFile(null);
       setCatImagePreview(null);
-      loadDashboardData();
+      await loadDashboardData();
     } catch (err: any) {
       console.error('Erro ao salvar categoria:', err);
       alert('Erro ao salvar categoria: ' + (err.message || 'Erro desconhecido'));
@@ -565,7 +663,7 @@ export const AdminDashboard = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-3xl font-bebas tracking-wide">Lista de Produtos</h2>
             <button 
-              onClick={() => { setEditingId(null); setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', imagens_adicionais: [], categoria_id: '', destaque: false, permite_personalizacao: false, preco_personalizacao: '0,00', entrega_rapida: false, permite_cores: false, cores: '' }); setIsModalOpen(true); }}
+              onClick={() => { setEditingId(null); setFormData({ nome: '', preco: '', descricao: '', tamanhos: '', imagem_url: '', imagens_adicionais: [], categoria_id: '', subcategoria_id: '', destaque: false, permite_personalizacao: false, preco_personalizacao: '0,00', entrega_rapida: false, permite_cores: false, cores: '' }); setIsModalOpen(true); }}
               className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all w-full sm:w-auto justify-center shadow-2xl uppercase tracking-[0.2em] text-xs"
             >
               <Plus size={18} /> Novo Produto
@@ -621,7 +719,7 @@ export const AdminDashboard = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-3xl font-bebas tracking-wide">Lista de Categorias</h2>
             <button 
-              onClick={() => { setEditingCatId(null); setCatFormData({ nome: '', imagem_url: '' }); setIsCatModalOpen(true); }}
+              onClick={() => { setEditingCatId(null); setCatFormData({ nome: '', imagem_url: '', subcategorias: [] }); setIsCatModalOpen(true); }}
               className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all w-full sm:w-auto justify-center shadow-2xl uppercase tracking-[0.2em] text-xs"
             >
               <Plus size={18} /> Nova Categoria
@@ -645,11 +743,60 @@ export const AdminDashboard = () => {
                         <div className="flex justify-end gap-3">
                           <button onClick={() => { 
                             setEditingCatId(c.id); 
-                            setCatFormData({ nome: c.nome, imagem_url: c.imagem_url || '' }); 
+                            setCatFormData({ 
+                              nome: c.nome, 
+                              imagem_url: c.imagem_url || '',
+                              subcategorias: subcategories.filter(s => s.categoria_id === c.id).map(s => s.nome)
+                            }); 
                             setCatImagePreview(c.imagem_url || null);
                             setIsCatModalOpen(true); 
                           }} className="p-2 hover:text-white text-muted transition-colors"><Edit2 size={20} /></button>
                           <button onClick={() => handleDeleteCategory(c.id)} className="p-2 hover:text-red-500 text-muted transition-colors"><Trash2 size={20} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Subcategories Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12">
+            <h2 className="text-3xl font-bebas tracking-wide">Lista de Subcategorias</h2>
+            <button 
+              onClick={() => { setEditingSubCatId(null); setSubCatFormData({ nome: '', categoria_id: '' }); setIsSubCatModalOpen(true); }}
+              className="flex items-center gap-2 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all w-full sm:w-auto justify-center shadow-2xl uppercase tracking-[0.2em] text-xs"
+            >
+              <Plus size={18} /> Nova Subcategoria
+            </button>
+          </div>
+
+          <div className="bg-secondary rounded-2xl border border-white/10 overflow-hidden glass-effect">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[400px] sm:min-w-0">
+                <thead>
+                  <tr className="border-b border-white/10 text-muted text-[10px] font-bold uppercase tracking-[0.3em]">
+                    <th className="px-8 py-6">Nome</th>
+                    <th className="px-8 py-6">Categoria Pai</th>
+                    <th className="px-8 py-6 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {subcategories.map(s => (
+                    <tr key={s.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-8 py-6 font-bold text-white text-base">{s.nome}</td>
+                      <td className="px-8 py-6 text-muted font-medium">
+                        {categories.find(c => c.id === s.categoria_id)?.nome || '-'}
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => { 
+                            setEditingSubCatId(s.id); 
+                            setSubCatFormData({ nome: s.nome, categoria_id: s.categoria_id }); 
+                            setIsSubCatModalOpen(true); 
+                          }} className="p-2 hover:text-white text-muted transition-colors"><Edit2 size={20} /></button>
+                          <button onClick={() => handleDeleteSubCategory(s.id)} className="p-2 hover:text-red-500 text-muted transition-colors"><Trash2 size={20} /></button>
                         </div>
                       </td>
                     </tr>
@@ -809,9 +956,33 @@ export const AdminDashboard = () => {
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Categoria</label>
                 <div className="relative">
-                  <select required value={formData.categoria_id} onChange={e => setFormData({...formData, categoria_id: e.target.value})} className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all appearance-none cursor-pointer">
+                  <select required value={formData.categoria_id} onChange={e => setFormData({...formData, categoria_id: e.target.value, subcategoria_id: ''})} className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all appearance-none cursor-pointer">
                     <option value="" className="bg-secondary">Selecionar...</option>
                     {categories.map(c => <option key={c.id} value={c.id} className="bg-secondary">{c.nome}</option>)}
+                  </select>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
+                    <Layers size={16} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Subcategoria (Opcional)</label>
+                <div className="relative">
+                  <select 
+                    disabled={!formData.categoria_id}
+                    value={formData.subcategoria_id} 
+                    onChange={e => setFormData({...formData, subcategoria_id: e.target.value})} 
+                    className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all appearance-none cursor-pointer disabled:opacity-50"
+                  >
+                    <option value="" className="bg-secondary">Nenhuma</option>
+                    {(() => {
+                      const filtered = subcategories.filter(s => s.categoria_id === formData.categoria_id);
+                      console.log('Filtrando subcategorias para categoria:', formData.categoria_id, 'Encontradas:', filtered.length);
+                      if (formData.categoria_id && filtered.length === 0) {
+                        return <option disabled className="bg-secondary">Nenhuma subcategoria cadastrada</option>;
+                      }
+                      return filtered.map(s => <option key={s.id} value={s.id} className="bg-secondary">{s.nome}</option>);
+                    })()}
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
                     <Layers size={16} />
@@ -976,6 +1147,50 @@ export const AdminDashboard = () => {
                 <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Nome da Categoria</label>
                 <input required value={catFormData.nome} onChange={e => setCatFormData({ ...catFormData, nome: e.target.value })} className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all placeholder:text-muted/30" placeholder="Ex: Camisas de Time" />
               </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Subcategorias</label>
+                <div className="flex gap-2">
+                  <input 
+                    value={newSubCatName} 
+                    onChange={e => setNewSubCatName(e.target.value)} 
+                    className="flex-1 px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all placeholder:text-muted/30" 
+                    placeholder="Nova subcategoria..." 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (newSubCatName.trim()) {
+                        setCatFormData({
+                          ...catFormData,
+                          subcategorias: [...catFormData.subcategorias, newSubCatName.trim()]
+                        });
+                        setNewSubCatName('');
+                      }
+                    }}
+                    className="px-6 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all uppercase tracking-[0.2em] text-[10px]"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {catFormData.subcategorias.map((sub, idx) => (
+                    <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-medium">
+                      {sub}
+                      <button 
+                        type="button"
+                        onClick={() => setCatFormData({
+                          ...catFormData,
+                          subcategorias: catFormData.subcategorias.filter((_, i) => i !== idx)
+                        })}
+                        className="text-muted hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
               
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Imagem da Categoria</label>
@@ -1016,6 +1231,48 @@ export const AdminDashboard = () => {
           </motion.div>
         </div>
       )}
+      {/* Subcategory Modal */}
+      {isSubCatModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsSubCatModalOpen(false)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-lg bg-secondary rounded-[2rem] border border-white/10 p-8 sm:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] glass-effect"
+          >
+            <h2 className="text-4xl mb-10 font-bebas tracking-wide">
+              {editingSubCatId ? 'Editar Subcategoria' : 'Nova Subcategoria'}
+            </h2>
+            <form onSubmit={handleSaveSubCategory} className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Nome da Subcategoria</label>
+                <input required value={subCatFormData.nome} onChange={e => setSubCatFormData({ ...subCatFormData, nome: e.target.value })} className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all placeholder:text-muted/30" placeholder="Ex: Camisas Retrô" />
+              </div>
+              
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] ml-1">Categoria Pai</label>
+                <div className="relative">
+                  <select required value={subCatFormData.categoria_id} onChange={e => setSubCatFormData({...subCatFormData, categoria_id: e.target.value})} className="w-full px-5 py-4 bg-black/50 border border-white/10 rounded-2xl focus:border-white/30 outline-none text-sm font-medium transition-all appearance-none cursor-pointer">
+                    <option value="" className="bg-secondary">Selecionar...</option>
+                    {categories.map(c => <option key={c.id} value={c.id} className="bg-secondary">{c.nome}</option>)}
+                  </select>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
+                    <Layers size={16} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-8 mt-10">
+                <button type="button" onClick={() => setIsSubCatModalOpen(false)} className="text-muted hover:text-white font-bold uppercase tracking-[0.2em] text-xs transition-colors">Cancelar</button>
+                <button type="submit" disabled={subCatUploading} className="px-12 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all disabled:opacity-50 shadow-2xl uppercase tracking-[0.2em] text-xs">
+                  {subCatUploading ? 'Processando...' : 'Salvar Subcategoria'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

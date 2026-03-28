@@ -23,7 +23,16 @@ export const ProductDetails = () => {
   useEffect(() => {
     if (!id) return;
     const fetchProduct = async () => {
-      const { data } = await supabase.from('produtos').select('*').eq('id', id).single();
+      const { data, error } = await supabase
+        .from('produtos')
+        .select(`
+          *,
+          categorias (nome),
+          subcategorias (nome)
+        `)
+        .eq('id', id)
+        .single();
+      
       if (data) {
         setProduct(data);
         setActiveImage(data.imagem_url);
@@ -130,6 +139,12 @@ export const ProductDetails = () => {
               {product.destaque && (
                 <span className="inline-block px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase text-amber-500 flex items-center gap-1 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                   <Star size={14} fill="currentColor" />
+                </span>
+              )}
+              {(product as any).categorias?.nome && (
+                <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase text-muted">
+                  {(product as any).categorias.nome}
+                  {(product as any).subcategorias?.nome && ` • ${(product as any).subcategorias.nome}`}
                 </span>
               )}
             </div>
