@@ -199,14 +199,6 @@ export const Catalog = () => {
               >
                 CATÁLOGO <br /> <span className="text-gray-base">COMPLETO.</span>
               </motion.h1>
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-muted text-lg md:text-xl font-medium"
-              >
-                Explore nossa curadoria exclusiva de peças premium e streetwear.
-              </motion.p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
