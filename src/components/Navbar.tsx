@@ -26,9 +26,9 @@ export const Navbar = ({ onOpenCart }: { onOpenCart: () => void }) => {
   ];
 
   return (
-    <nav className="absolute top-0 left-0 right-0 z-50 py-4">
+    <nav className={`fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-500 ${isScrolled ? 'bg-black/40 backdrop-blur-md' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-16 px-4 sm:px-8 rounded-full glass-effect shadow-2xl border border-white/10 transition-all duration-500">
+        <div className={`flex justify-between items-center h-16 px-4 sm:px-8 rounded-full border border-white/10 transition-all duration-500 ${isScrolled ? 'bg-white/10 shadow-2xl' : 'glass-effect shadow-xl'}`}>
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-black tracking-tighter text-white font-bebas">
               KB<span className="text-muted">OUTLET</span>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { isAdmin } from '../lib/supabase';
+import { authService } from '../services/authService';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const authorized = await isAdmin();
+      const authorized = await authService.isAdmin();
       setIsAuthorized(authorized);
     };
     checkAuth();

@@ -1,57 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase, isAdmin } from '../lib/supabase';
+import React from 'react';
 import { motion } from 'motion/react';
 import { Lock, Mail } from 'lucide-react';
+import { useAdminLogin } from '../hooks/useAdminLogin';
 
 export const AdminLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        console.log('Sessão ativa encontrada, redirecionando...');
-        navigate('/admin/dashboard');
-      }
-    };
-    checkSession();
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    console.log('Tentando login com:', email);
-
-    try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (authError) {
-        console.error('Erro no Supabase Auth:', authError.message, authError);
-        setError(`Erro: ${authError.message}`);
-        setLoading(false);
-      } else if (data.user) {
-        console.log('Login bem-sucedido:', data.user.email);
-        // Pequeno delay para garantir que o Supabase atualizou o estado local
-        setTimeout(() => {
-          navigate('/admin/dashboard');
-        }, 500);
-      } else {
-        console.error('Login retornou dados vazios');
-        setError('Erro ao obter dados do usuário.');
-        setLoading(false);
-      }
-    } catch (err: any) {
-      console.error('Erro inesperado no login:', err);
-      setError(`Erro inesperado: ${err.message || 'Erro desconhecido'}`);
-      setLoading(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    handleLogin
+  } = useAdminLogin();
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-20">

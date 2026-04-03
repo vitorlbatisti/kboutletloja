@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, ShoppingCart, Trash2, Plus, Minus, Send, ShoppingBag, User } from 'lucide-react';
 import { useCart } from '../CartContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import { orderService } from '../services/orderService';
 
 export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const { cart, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
@@ -17,29 +17,27 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
     setIsSubmitting(true);
     try {
-      // 1. Save to Supabase
-      const { error } = await supabase.from('pedidos_v1').insert([{
-        cliente_nome: customerName,
-        cliente_whatsapp: 'Via WhatsApp Web',
-        itens: cart,
+      // 1. Save to Supabase using orderService
+      await orderService.createOrder({
+        customer_name: customerName,
+        customer_whatsapp: 'Via WhatsApp Web',
+        items: cart,
         total: totalPrice,
-        status: 'pendente'
-      }]);
-
-      if (error) throw error;
+        status: 'pending'
+      });
 
       // 2. Redirect to WhatsApp
       const message = `*Novo Pedido - KB Outlet*%0A%0A` +
         `*Cliente:* ${customerName}%0A%0A` +
         cart.map(item => {
-          const hasPersonalization = item.personalizacao_texto || item.personalizacao_numero;
-          const itemPrice = item.preco + (hasPersonalization ? (item.preco_personalizacao || 0) : 0);
-          let itemDesc = `- ${item.nome} (${item.selectedSize}${item.selectedColor ? `, Cor: ${item.selectedColor}` : ''})`;
+          const hasPersonalization = item.personalization_text || item.personalization_number;
+          const itemPrice = item.price + (hasPersonalization ? (item.personalization_price || 0) : 0);
+          let itemDesc = `- ${item.name} (${item.selected_size}${item.selected_color ? `, Cor: ${item.selected_color}` : ''})`;
           
           if (hasPersonalization) {
             const parts = [];
-            if (item.personalizacao_texto) parts.push(`Nome: ${item.personalizacao_texto}`);
-            if (item.personalizacao_numero) parts.push(`Nº: ${item.personalizacao_numero}`);
+            if (item.personalization_text) parts.push(`Nome: ${item.personalization_text}`);
+            if (item.personalization_number) parts.push(`Nº: ${item.personalization_number}`);
             itemDesc += ` [Personalizado: ${parts.join(', ')}]`;
           }
           
@@ -118,53 +116,53 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    key={`${item.id}-${item.selectedSize}-${item.selectedColor || 'none'}-${item.personalizacao_texto || 'none'}-${item.personalizacao_numero || 'none'}`} 
+                    key={`${item.id}-${item.selected_size}-${item.selected_color || 'none'}-${item.personalization_text || 'none'}-${item.personalization_number || 'none'}`} 
                     className="flex gap-4 group relative"
                   >
                     <div className="w-16 h-20 bg-zinc-950 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
-                      <img src={item.imagem_url} alt={item.nome} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-0.5">
                       <div>
-                        <h3 className="font-bold text-white tracking-tight text-sm line-clamp-1">{item.nome}</h3>
+                        <h3 className="font-bold text-white tracking-tight text-sm line-clamp-1">{item.name}</h3>
                         <div className="flex flex-wrap gap-2 mt-0.5">
-                          <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Tamanho: {item.selectedSize}</p>
-                          {item.selectedColor && (
-                            <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Cor: {item.selectedColor}</p>
+                          <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Tamanho: {item.selected_size}</p>
+                          {item.selected_color && (
+                            <p className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Cor: {item.selected_color}</p>
                           )}
                         </div>
-                        {(item.personalizacao_texto || item.personalizacao_numero) && (
+                        {(item.personalization_text || item.personalization_number) && (
                           <div className="mt-1 space-y-0.5">
-                            {item.personalizacao_texto && (
-                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Nome: {item.personalizacao_texto}</p>
+                            {item.personalization_text && (
+                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Nome: {item.personalization_text}</p>
                             )}
-                            {item.personalizacao_numero && (
-                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Número: {item.personalizacao_numero}</p>
+                            {item.personalization_number && (
+                              <p className="text-[9px] uppercase tracking-widest text-emerald-500 font-black italic">Número: {item.personalization_number}</p>
                             )}
                           </div>
                         )}
                         <p className="text-base font-black mt-1 tracking-tighter">
-                          R$ {(item.preco + ((item.personalizacao_texto || item.personalizacao_numero) ? (item.preco_personalizacao || 0) : 0)).toFixed(2)}
+                          R$ {(item.price + ((item.personalization_text || item.personalization_number) ? (item.personalization_price || 0) : 0)).toFixed(2)}
                         </p>
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center bg-zinc-950 border border-white/5 rounded-full px-1.5 py-0.5">
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
+                            onClick={() => updateQuantity(item.id, item.selected_size, item.quantity - 1, item.selected_color, item.personalization_text, item.personalization_number)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Minus size={14} />
                           </button>
                           <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
                           <button 
-                            onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
+                            onClick={() => updateQuantity(item.id, item.selected_size, item.quantity + 1, item.selected_color, item.personalization_text, item.personalization_number)}
                             className="p-1.5 hover:text-white text-zinc-600 transition-colors"
                           >
                             <Plus size={14} />
                           </button>
                         </div>
                         <button 
-                          onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.personalizacao_texto, item.personalizacao_numero)}
+                          onClick={() => removeFromCart(item.id, item.selected_size, item.selected_color, item.personalization_text, item.personalization_number)}
                           className="p-2 text-zinc-800 hover:text-red-500 transition-all hover:bg-red-500/10 rounded-full"
                         >
                           <Trash2 size={16} />
