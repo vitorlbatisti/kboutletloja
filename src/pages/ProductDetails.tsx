@@ -24,7 +24,7 @@ export const ProductDetails = () => {
   } = useProductDetails();
 
   if (loading) return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-32 md:pt-48 pb-32 animate-pulse">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-36 md:pt-48 pb-32 animate-pulse">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
         <div className="aspect-square md:aspect-[3/4] bg-secondary rounded-2xl border border-white/5" />
         <div className="space-y-6 md:space-y-8">
@@ -49,7 +49,7 @@ export const ProductDetails = () => {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-28 md:pt-48 pb-24">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-36 md:pt-48 pb-24">
       <button 
         onClick={() => navigate(-1)}
         className="group flex items-center gap-2 text-muted hover:text-white mb-6 md:mb-8 transition-all font-bold uppercase tracking-widest text-[9px] md:text-[10px]"

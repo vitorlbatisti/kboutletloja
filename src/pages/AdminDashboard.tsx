@@ -127,7 +127,7 @@ export const AdminDashboard = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl mx-auto px-4 pt-24 pb-20 relative"
+      className="max-w-6xl mx-auto px-4 pt-40 pb-20 relative"
     >
       <div className="absolute top-0 -left-20 w-96 h-96 glow-purple pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 glow-red pointer-events-none" />
