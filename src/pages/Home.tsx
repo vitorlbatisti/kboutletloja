@@ -26,13 +26,13 @@ export const Home = () => {
 
         {/* Content (Relative) */}
         <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-12 md:py-0">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20">
+          <div className="flex flex-col items-center justify-center text-center">
             {/* Text Content */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-center md:text-left max-w-2xl"
+              className="max-w-3xl"
             >
               <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold tracking-[0.3em] uppercase text-white/80 mb-6">
                 KB OUTLET • PREMIUM STREETWEAR
@@ -40,10 +40,10 @@ export const Home = () => {
               <h1 className="text-6xl md:text-8xl lg:text-9xl font-bebas leading-[0.85] tracking-tighter mb-8">
                 ESTILO <br /> SEM LIMITES.
               </h1>
-              <p className="text-muted text-lg md:text-xl font-medium mb-10 max-w-lg mx-auto md:mx-0">
+              <p className="text-muted text-lg md:text-xl font-medium mb-10 max-w-lg mx-auto">
                 Curadoria exclusiva das melhores marcas e peças outlet premium para quem não aceita o comum.
               </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
                 <Link 
                   to="/catalogo" 
                   className="w-full sm:w-auto px-10 py-4 bg-white text-black font-black text-sm uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-2xl"
@@ -57,20 +57,6 @@ export const Home = () => {
                   Ver novidades
                 </Link>
               </div>
-            </motion.div>
-
-            {/* Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="w-full max-w-md aspect-[3/4] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative z-20"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop" 
-                alt="Featured Look" 
-                className="w-full h-full object-cover"
-              />
             </motion.div>
           </div>
         </div>
