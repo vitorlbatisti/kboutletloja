@@ -142,7 +142,7 @@ export const useAdminActions = (onSuccess: () => void) => {
         description: formData.description.trim(),
         sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s !== ''),
         image_url: finalImageUrl,
-        imagens_adicionais: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
+        additional_images: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
         category_id: formData.category_id || null,
         subcategory_id: formData.subcategory_id || null,
         featured: formData.featured,

@@ -3,40 +3,40 @@ import { Product } from '../types';
 
 const mapProduct = (p: any): Product => ({
   id: p.id,
-  name: p.nome,
-  price: Number(p.preco),
-  description: p.descricao,
-  sizes: p.tamanhos || [],
-  image_url: p.imagem_url,
-  imagens_adicionais: p.imagens_adicionais || [],
-  category_id: p.categoria_id,
-  subcategory_id: p.subcategory_id, // Might be null if not in DB
-  featured: p.destaque,
-  allow_personalization: p.permite_personalizacao,
-  personalization_price: Number(p.preco_personalizacao || 0),
-  fast_delivery: p.entrega_rapida, // Check if this column exists
-  allow_colors: p.permite_cores,
-  colors: p.cores || [],
+  name: p.name,
+  price: Number(p.price),
+  description: p.description,
+  sizes: p.sizes || [],
+  image_url: p.image_url,
+  imagens_adicionais: p.additional_images || [],
+  category_id: p.category_id,
+  subcategory_id: p.subcategory_id,
+  featured: p.featured,
+  allow_personalization: p.allow_personalization,
+  personalization_price: Number(p.personalization_price || 0),
+  fast_delivery: p.fast_delivery,
+  allow_colors: p.allow_colors,
+  colors: p.colors || [],
   is_kids_kit: p.is_kids_kit,
   created_at: p.created_at
 });
 
 const mapProductToDB = (p: Partial<Product>) => {
   const db: any = {};
-  if (p.name !== undefined) db.nome = p.name;
-  if (p.price !== undefined) db.preco = p.price;
-  if (p.description !== undefined) db.descricao = p.description;
-  if (p.sizes !== undefined) db.tamanhos = p.sizes;
-  if (p.image_url !== undefined) db.imagem_url = p.image_url;
-  if (p.imagens_adicionais !== undefined) db.imagens_adicionais = p.imagens_adicionais;
-  if (p.category_id !== undefined) db.categoria_id = p.category_id;
+  if (p.name !== undefined) db.name = p.name;
+  if (p.price !== undefined) db.price = p.price;
+  if (p.description !== undefined) db.description = p.description;
+  if (p.sizes !== undefined) db.sizes = p.sizes;
+  if (p.image_url !== undefined) db.image_url = p.image_url;
+  if (p.imagens_adicionais !== undefined) db.additional_images = p.imagens_adicionais;
+  if (p.category_id !== undefined) db.category_id = p.category_id;
   if (p.subcategory_id !== undefined) db.subcategory_id = p.subcategory_id;
-  if (p.featured !== undefined) db.destaque = p.featured;
-  if (p.allow_personalization !== undefined) db.permite_personalizacao = p.allow_personalization;
-  if (p.personalization_price !== undefined) db.preco_personalizacao = p.personalization_price;
-  if (p.fast_delivery !== undefined) db.entrega_rapida = p.fast_delivery;
-  if (p.allow_colors !== undefined) db.permite_cores = p.allow_colors;
-  if (p.colors !== undefined) db.cores = p.colors;
+  if (p.featured !== undefined) db.featured = p.featured;
+  if (p.allow_personalization !== undefined) db.allow_personalization = p.allow_personalization;
+  if (p.personalization_price !== undefined) db.personalization_price = p.personalization_price;
+  if (p.fast_delivery !== undefined) db.fast_delivery = p.fast_delivery;
+  if (p.allow_colors !== undefined) db.allow_colors = p.allow_colors;
+  if (p.colors !== undefined) db.colors = p.colors;
   if (p.is_kids_kit !== undefined) db.is_kids_kit = p.is_kids_kit;
   return db;
 };
@@ -44,7 +44,7 @@ const mapProductToDB = (p: Partial<Product>) => {
 export const productService = {
   async getProducts() {
     const { data, error } = await supabase
-      .from('produtos')
+      .from('products')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -54,7 +54,7 @@ export const productService = {
 
   async getProductById(id: string) {
     const { data, error } = await supabase
-      .from('produtos')
+      .from('products')
       .select('*')
       .eq('id', id)
       .single();
@@ -66,7 +66,7 @@ export const productService = {
   async createProduct(product: Omit<Product, 'id' | 'created_at'>) {
     const dbProduct = mapProductToDB(product);
     const { data, error } = await supabase
-      .from('produtos')
+      .from('products')
       .insert([dbProduct])
       .select()
       .single();
@@ -78,7 +78,7 @@ export const productService = {
   async updateProduct(id: string, product: Partial<Product>) {
     const dbProduct = mapProductToDB(product);
     const { data, error } = await supabase
-      .from('produtos')
+      .from('products')
       .update(dbProduct)
       .eq('id', id)
       .select()
@@ -90,7 +90,7 @@ export const productService = {
 
   async deleteProduct(id: string) {
     const { error } = await supabase
-      .from('produtos')
+      .from('products')
       .delete()
       .eq('id', id);
     
