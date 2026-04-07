@@ -22,12 +22,19 @@ export const OrderTab: React.FC<OrderTabProps> = ({
     ? orders.filter(o => o.created_at.startsWith(dateFilter))
     : orders;
 
+  const STATUS_LABELS: Record<Order['status'], string> = {
+    pending: 'Pendente',
+    paid: 'Pago',
+    shipped: 'Enviado',
+    cancelled: 'Cancelado'
+  };
+
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
-      case 'pending': return <Clock size={16} className="text-yellow-500" />;
-      case 'paid': return <CheckCircle size={16} className="text-green-500" />;
-      case 'shipped': return <Truck size={16} className="text-blue-500" />;
-      case 'cancelled': return <XCircle size={16} className="text-red-500" />;
+      case 'pending': return <Clock size={14} className="text-yellow-500" />;
+      case 'paid': return <CheckCircle size={14} className="text-green-500" />;
+      case 'shipped': return <Truck size={14} className="text-blue-500" />;
+      case 'cancelled': return <XCircle size={14} className="text-red-500" />;
     }
   };
 
@@ -79,9 +86,9 @@ export const OrderTab: React.FC<OrderTabProps> = ({
                     <h3 className="text-xl font-bold text-white mb-1">{o.customer_name}</h3>
                     <p className="text-sm text-white/40 font-medium">{o.customer_whatsapp}</p>
                   </div>
-                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider ${getStatusColor(o.status)}`}>
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getStatusColor(o.status)}`}>
                     {getStatusIcon(o.status)}
-                    {o.status}
+                    {STATUS_LABELS[o.status]}
                   </div>
                 </div>
 
@@ -107,27 +114,29 @@ export const OrderTab: React.FC<OrderTabProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-row lg:flex-col justify-between lg:justify-start gap-2 lg:w-48">
-                <div className="flex flex-wrap gap-2 flex-1">
+              <div className="flex flex-col gap-3 lg:w-56">
+                <div className="grid grid-cols-2 gap-2">
                   {(['pending', 'paid', 'shipped', 'cancelled'] as Order['status'][]).map((status) => (
                     <button
                       key={status}
                       onClick={() => onUpdateStatus(o.id, status)}
-                      className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[10px] font-bold uppercase transition-all duration-300 border ${
+                      className={`px-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 border text-center ${
                         o.status === status
-                          ? 'bg-white text-black border-white shadow-lg shadow-white/10'
-                          : 'bg-white/5 text-white/40 border-white/10 hover:bg-white/10 hover:text-white'
+                          ? 'bg-white text-black border-white shadow-xl shadow-white/5 scale-[1.02]'
+                          : 'bg-white/5 text-white/30 border-white/5 hover:border-white/20 hover:text-white/60'
                       }`}
                     >
-                      {status}
+                      {STATUS_LABELS[status]}
                     </button>
                   ))}
                 </div>
                 <button
                   onClick={() => onDelete(o.id)}
-                  className="bg-red-500/10 text-red-500 p-3 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20"
+                  className="w-full flex items-center justify-center gap-2 bg-red-500/5 text-red-500/40 p-3 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-500 border border-red-500/10 hover:border-red-500 group"
+                  title="Excluir Pedido"
                 >
-                  <Trash2 size={20} />
+                  <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] lg:hidden">Excluir</span>
                 </button>
               </div>
             </div>
