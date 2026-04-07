@@ -25,7 +25,8 @@ export const useAdminActions = (onSuccess: () => void) => {
     personalization_price: '0,00',
     fast_delivery: false,
     allow_colors: false,
-    colors: ''
+    colors: '',
+    is_kids_kit: false
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -37,6 +38,30 @@ export const useAdminActions = (onSuccess: () => void) => {
     setImagePreview(null);
     setAdditionalImageFiles([null, null]);
     setAdditionalImagePreviews([null, null]);
+  };
+
+  const handleRemoveMainImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
+
+  const handleRemoveAdditionalImage = (index: number) => {
+    setAdditionalImageFiles(prev => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setAdditionalImagePreviews(prev => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setFormData(prev => {
+      const nextImages = [...prev.additional_images];
+      nextImages[index] = '';
+      return { ...prev, additional_images: nextImages };
+    });
   };
 
   const handlePriceChange = (value: string, field: 'price' | 'personalization_price' = 'price') => {
@@ -125,7 +150,8 @@ export const useAdminActions = (onSuccess: () => void) => {
         personalization_price: parseFloat(formData.personalization_price.replace(/\./g, '').replace(',', '.')),
         fast_delivery: formData.fast_delivery,
         allow_colors: formData.allow_colors,
-        colors: formData.colors.split(',').map(c => c.trim()).filter(c => c !== '')
+        colors: formData.colors.split(',').map(c => c.trim()).filter(c => c !== ''),
+        is_kids_kit: formData.is_kids_kit
       };
 
       if (editingId) {
@@ -164,6 +190,8 @@ export const useAdminActions = (onSuccess: () => void) => {
     handlePriceChange,
     toggleSize,
     handleSaveProduct,
-    resetForm
+    resetForm,
+    handleRemoveMainImage,
+    handleRemoveAdditionalImage
   };
 };

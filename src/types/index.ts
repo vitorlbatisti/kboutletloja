@@ -29,6 +29,7 @@ export interface Product {
   fast_delivery?: boolean;
   allow_colors?: boolean;
   colors?: string[];
+  is_kids_kit?: boolean;
   created_at?: string;
 }
 

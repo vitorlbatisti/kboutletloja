@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Category, SubCategory } from '../types';
+import { Category } from '../types';
+import { categoryService } from '../services/categoryService';
 
 export const useCategoryActions = (onSuccess: () => void) => {
   const [catUploading, setCatUploading] = useState(false);
@@ -56,32 +57,29 @@ export const useCategoryActions = (onSuccess: () => void) => {
       let categoryId = editingCatId;
 
       if (editingCatId) {
-        const { error } = await supabase.from('categories').update(payload).eq('id', editingCatId);
-        if (error) throw error;
+        await categoryService.updateCategory(editingCatId, payload);
       } else {
-        const { data, error } = await supabase.from('categories').insert([payload]).select().single();
-        if (error) throw error;
+        const data = await categoryService.createCategory(payload);
         categoryId = data.id;
       }
 
       if (categoryId) {
-        const { data: currentSubCats } = await supabase
-          .from('subcategories')
-          .select('name')
-          .eq('category_id', categoryId);
+        const currentSubCats = await categoryService.getSubcategories();
+        const currentNames = currentSubCats
+          .filter(s => s.category_id === categoryId)
+          .map(s => s.name);
         
-        const currentNames = currentSubCats?.map(s => s.name) || [];
         const targetNames = catFormData.subcategories.map(s => s.trim()).filter(s => s !== '');
 
         const toAdd = targetNames.filter(name => !currentNames.includes(name));
-        const toRemove = currentNames.filter(name => !targetNames.includes(name));
+        const toRemove = currentSubCats.filter(s => s.category_id === categoryId && !targetNames.includes(s.name));
 
-        if (toAdd.length > 0) {
-          await supabase.from('subcategories').insert(toAdd.map(name => ({ name, category_id: categoryId })));
+        for (const name of toAdd) {
+          await categoryService.createSubcategory({ name, category_id: categoryId });
         }
 
-        if (toRemove.length > 0) {
-          await supabase.from('subcategories').delete().eq('category_id', categoryId).in('name', toRemove);
+        for (const sub of toRemove) {
+          await categoryService.deleteSubcategory(sub.id);
         }
       }
 

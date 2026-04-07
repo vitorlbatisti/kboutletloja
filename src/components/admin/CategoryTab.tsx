@@ -70,7 +70,7 @@ export const CategoryTab: React.FC<CategoryTabProps> = ({
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">{c.name}</h3>
+                <h3 className="text-xl font-bold text-white group-hover:text-white transition-colors">{c.name}</h3>
                 <p className="text-sm text-white/40 mt-1">
                   {subcategories.filter(s => s.category_id === c.id).length} Subcategorias
                 </p>
@@ -86,7 +86,7 @@ export const CategoryTab: React.FC<CategoryTabProps> = ({
           <h2 className="text-3xl font-bebas tracking-wide text-white/90">Subcategorias ({subcategories.length})</h2>
           <button
             onClick={onAddSub}
-            className="flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl shadow-purple-600/20"
+            className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl shadow-white/10"
           >
             <Plus size={20} />
             Nova Subcategoria
@@ -100,7 +100,7 @@ export const CategoryTab: React.FC<CategoryTabProps> = ({
               layout
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white/5 border border-white/10 p-4 rounded-xl flex justify-between items-center hover:border-purple-500/30 transition-all duration-300 backdrop-blur-sm"
+              className="bg-white/5 border border-white/10 p-4 rounded-xl flex justify-between items-center hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
             >
               <div>
                 <h4 className="font-bold text-white">{s.name}</h4>
