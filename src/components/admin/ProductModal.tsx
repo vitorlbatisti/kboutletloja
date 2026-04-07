@@ -18,7 +18,7 @@ interface ProductModalProps {
   onSave: (e: React.FormEvent) => void;
   imagePreview: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemoveImage: () => void;
+  onRemoveMainImage: () => void;
   additionalImagePreviews: (string | null)[];
   onAdditionalFileChange: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveAdditionalImage: (index: number) => void;
@@ -38,7 +38,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onSave,
   imagePreview,
   onFileChange,
-  onRemoveImage,
+  onRemoveMainImage,
   additionalImagePreviews,
   onAdditionalFileChange,
   onRemoveAdditionalImage,
@@ -83,23 +83,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     {imagePreview ? (
                       <>
                         <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                           <span className="text-sm font-bold text-white">Trocar Imagem</span>
                         </div>
                         <button
                           type="button"
-                          onClick={(e) => { 
-                            e.preventDefault();
-                            e.stopPropagation(); 
-                            onRemoveImage(); 
-                          }}
-                          className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600 shadow-lg"
+                          onClick={(e) => { e.stopPropagation(); onRemoveMainImage(); }}
+                          className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-100 transition-opacity z-20 hover:bg-red-600"
                         >
-                          <X size={18} />
+                          <X size={20} />
                         </button>
                       </>
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20 pointer-events-none">
                         <ImageIcon size={48} />
                         <span className="text-xs font-bold uppercase tracking-widest">Upload Imagem</span>
                       </div>
@@ -124,18 +120,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                             <img src={preview} alt={`Extra ${idx}`} className="w-full h-full object-cover" />
                             <button
                               type="button"
-                              onClick={(e) => { 
-                                e.preventDefault();
-                                e.stopPropagation(); 
-                                onRemoveAdditionalImage(idx); 
-                              }}
-                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-red-600"
+                              onClick={(e) => { e.stopPropagation(); onRemoveAdditionalImage(idx); }}
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-100 transition-opacity z-20 hover:bg-red-600"
                             >
                               <X size={14} />
                             </button>
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/10">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/10 pointer-events-none">
                             <Plus size={24} />
                           </div>
                         )}
@@ -171,7 +163,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         required
                         value={formData.price}
                         onChange={onPriceChange}
-                        data-field="price"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-all outline-none"
                         placeholder="0,00"
                       />
@@ -228,7 +219,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         onClick={() => setFormData({ ...formData, is_kids_kit: !formData.is_kids_kit, sizes: '' })}
                         className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
                           formData.is_kids_kit 
-                            ? 'bg-purple-500/10 border-purple-500/50 text-purple-500' 
+                            ? 'bg-white text-black border-white' 
                             : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
                         }`}
                       >
@@ -250,6 +241,63 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           {size}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Cores</label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, allow_colors: !formData.allow_colors })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                          formData.allow_colors 
+                            ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
+                            : 'bg-white/5 border-white/10 text-white/40'
+                        }`}
+                      >
+                        <span className="text-xs font-bold uppercase tracking-widest">Habilitar Cores</span>
+                      </button>
+                      {formData.allow_colors && (
+                        <input
+                          value={formData.colors}
+                          onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:border-white/30 transition-all outline-none"
+                          placeholder="Azul, Vermelho, Preto..."
+                        />
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Personalização</label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, allow_personalization: !formData.allow_personalization })}
+                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                          formData.allow_personalization 
+                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500' 
+                            : 'bg-white/5 border-white/10 text-white/40'
+                        }`}
+                      >
+                        <span className="text-xs font-bold uppercase tracking-widest">Habilitar</span>
+                      </button>
+                      {formData.allow_personalization && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">Preço Extra (R$)</label>
+                          <input
+                            value={formData.personalization_price}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/\D/g, '');
+                              const amount = (parseInt(digits || '0') / 100).toFixed(2);
+                              const [integer, decimal] = amount.split('.');
+                              const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                              setFormData({ ...formData, personalization_price: `${formattedInteger},${decimal}` });
+                            }}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:border-white/30 transition-all outline-none"
+                            placeholder="0,00"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -278,49 +326,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <Truck size={18} />
                       <span className="text-xs font-bold uppercase tracking-widest">Rápida</span>
                     </button>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase tracking-widest text-white/40">Personalização</label>
-                        <p className="text-[10px] text-white/20">Permitir nome e número no produto</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, allow_personalization: !formData.allow_personalization })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.allow_personalization ? 'bg-purple-500' : 'bg-white/10'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.allow_personalization ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {formData.allow_personalization && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="space-y-2"
-                      >
-                        <label className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Valor da Personalização (R$)</label>
-                        <input
-                          value={formData.personalization_price}
-                          onChange={(e) => onPriceChange(e as any)}
-                          onFocus={() => {
-                            // This is a hack to tell the handler which field to update
-                            // In a real app we'd pass the field name to onPriceChange
-                          }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-all outline-none"
-                          placeholder="0,00"
-                          data-field="personalization_price"
-                        />
-                      </motion.div>
-                    )}
                   </div>
                 </div>
 
