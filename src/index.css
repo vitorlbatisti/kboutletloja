@@ -10,7 +10,7 @@
   --color-accent: #FFFFFF;
   --color-muted: #A1A1AA;
   --color-gray-base: #444444;
-  --color-glow-white: #FFFFFF;
+  --color-glow-purple: #7C3AED;
   --color-glow-red: #DC2626;
   
   --radius-xl2: 1rem;
@@ -74,10 +74,10 @@ h3 { font-size: 24px; line-height: 1.2; }
   transform: scale(1.05);
 }
 
-.glow-white {
+.glow-purple {
   filter: blur(100px);
-  background: var(--color-glow-white);
-  opacity: 0.1;
+  background: var(--color-glow-purple);
+  opacity: 0.15;
 }
 
 .glow-red {

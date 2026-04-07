@@ -40,30 +40,6 @@ export const useAdminActions = (onSuccess: () => void) => {
     setAdditionalImagePreviews([null, null]);
   };
 
-  const handleRemoveMainImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setFormData(prev => ({ ...prev, image_url: '' }));
-  };
-
-  const handleRemoveAdditionalImage = (index: number) => {
-    setAdditionalImageFiles(prev => {
-      const next = [...prev];
-      next[index] = null;
-      return next;
-    });
-    setAdditionalImagePreviews(prev => {
-      const next = [...prev];
-      next[index] = null;
-      return next;
-    });
-    setFormData(prev => {
-      const nextImages = [...prev.additional_images];
-      nextImages[index] = '';
-      return { ...prev, additional_images: nextImages };
-    });
-  };
-
   const handlePriceChange = (value: string, field: 'price' | 'personalization_price' = 'price') => {
     const digits = value.replace(/\D/g, '');
     const amount = (parseInt(digits || '0') / 100).toFixed(2);
@@ -190,8 +166,6 @@ export const useAdminActions = (onSuccess: () => void) => {
     handlePriceChange,
     toggleSize,
     handleSaveProduct,
-    resetForm,
-    handleRemoveMainImage,
-    handleRemoveAdditionalImage
+    resetForm
   };
 };

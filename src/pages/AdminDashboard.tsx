@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { LogOut, RefreshCw, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { LogOut, RefreshCw } from 'lucide-react';
 import { useAdmin } from '../hooks/useAdmin';
 import { useAdminActions } from '../hooks/useAdminActions';
 import { useCategoryActions } from '../hooks/useCategoryActions';
@@ -13,8 +12,6 @@ import { ProductModal } from '../components/admin/ProductModal';
 import { CategoryModal } from '../components/admin/CategoryModal';
 import { DeleteConfirmModal } from '../components/admin/DeleteConfirmModal';
 import { Product, Category, Order } from '../types';
-import { productService } from '../services/productService';
-import { orderService } from '../services/orderService';
 import { supabase } from '../lib/supabase';
 
 export const AdminDashboard = () => {
@@ -92,17 +89,14 @@ export const AdminDashboard = () => {
     if (!itemToDelete) return;
     const { id, type } = itemToDelete;
     try {
-      if (type === 'order') {
-        await orderService.deleteOrder(id);
-      } else {
-        let table = '';
-        if (type === 'product') table = 'products';
-        else if (type === 'category') table = 'categories';
-        else if (type === 'subcategory') table = 'subcategories';
+      let table = '';
+      if (type === 'product') table = 'products';
+      else if (type === 'category') table = 'categories';
+      else if (type === 'order') table = 'orders';
+      else if (type === 'subcategory') table = 'subcategories';
 
-        const { error } = await supabase.from(table).delete().eq('id', id);
-        if (error) throw error;
-      }
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
       
       loadDashboardData();
       setIsDeleteModalOpen(false);
@@ -114,7 +108,8 @@ export const AdminDashboard = () => {
 
   const handleUpdateOrderStatus = async (id: string, status: Order['status']) => {
     try {
-      await orderService.updateOrderStatus(id, status);
+      const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+      if (error) throw error;
       loadDashboardData();
     } catch (err: any) {
       alert('Erro ao atualizar status: ' + err.message);
@@ -135,7 +130,7 @@ export const AdminDashboard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto px-4 pt-20 pb-20 relative"
     >
-      <div className="absolute top-0 -left-20 w-96 h-96 glow-white pointer-events-none" />
+      <div className="absolute top-0 -left-20 w-96 h-96 glow-purple pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 glow-red pointer-events-none" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4 relative z-10">
@@ -144,13 +139,6 @@ export const AdminDashboard = () => {
           <p className="text-muted mt-1 sm:text-base text-sm font-medium">Gerencie seus produtos e categorias</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
-          <Link
-            to="/"
-            className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-all"
-            title="Ir para a loja"
-          >
-            <Home size={20} />
-          </Link>
           <button
             onClick={() => loadDashboardData()}
             className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-all"
@@ -220,7 +208,6 @@ export const AdminDashboard = () => {
             productActions.setImagePreview(URL.createObjectURL(e.target.files[0]));
           }
         }}
-        onRemoveMainImage={productActions.handleRemoveMainImage}
         additionalImagePreviews={productActions.additionalImagePreviews}
         onAdditionalFileChange={(index, e) => {
           if (e.target.files && e.target.files[0]) {
@@ -237,7 +224,18 @@ export const AdminDashboard = () => {
             });
           }
         }}
-        onRemoveAdditionalImage={productActions.handleRemoveAdditionalImage}
+        onRemoveAdditionalImage={(index) => {
+          productActions.setAdditionalImageFiles(prev => {
+            const next = [...prev];
+            next[index] = null;
+            return next;
+          });
+          productActions.setAdditionalImagePreviews(prev => {
+            const next = [...prev];
+            next[index] = null;
+            return next;
+          });
+        }}
         onPriceChange={(e) => productActions.handlePriceChange(e.target.value)}
         onToggleSize={productActions.toggleSize}
       />

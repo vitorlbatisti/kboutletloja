@@ -18,7 +18,6 @@ interface ProductModalProps {
   onSave: (e: React.FormEvent) => void;
   imagePreview: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemoveMainImage: () => void;
   additionalImagePreviews: (string | null)[];
   onAdditionalFileChange: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveAdditionalImage: (index: number) => void;
@@ -38,7 +37,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onSave,
   imagePreview,
   onFileChange,
-  onRemoveMainImage,
   additionalImagePreviews,
   onAdditionalFileChange,
   onRemoveAdditionalImage,
@@ -83,19 +81,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     {imagePreview ? (
                       <>
                         <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <span className="text-sm font-bold text-white">Trocar Imagem</span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); onRemoveMainImage(); }}
-                          className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-100 transition-opacity z-20 hover:bg-red-600"
-                        >
-                          <X size={20} />
-                        </button>
                       </>
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20 pointer-events-none">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
                         <ImageIcon size={48} />
                         <span className="text-xs font-bold uppercase tracking-widest">Upload Imagem</span>
                       </div>
@@ -103,7 +94,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <input
                       type="file"
                       onChange={onFileChange}
-                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                       accept="image/*"
                     />
                   </div>
@@ -121,20 +112,20 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onRemoveAdditionalImage(idx); }}
-                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-100 transition-opacity z-20 hover:bg-red-600"
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <X size={14} />
                             </button>
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/10 pointer-events-none">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/10">
                             <Plus size={24} />
                           </div>
                         )}
                         <input
                           type="file"
                           onChange={(e) => onAdditionalFileChange(idx, e)}
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
                           accept="image/*"
                         />
                       </div>
@@ -219,7 +210,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         onClick={() => setFormData({ ...formData, is_kids_kit: !formData.is_kids_kit, sizes: '' })}
                         className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
                           formData.is_kids_kit 
-                            ? 'bg-white text-black border-white' 
+                            ? 'bg-purple-500/10 border-purple-500/50 text-purple-500' 
                             : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
                         }`}
                       >
@@ -241,63 +232,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           {size}
                         </button>
                       ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Cores</label>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, allow_colors: !formData.allow_colors })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                          formData.allow_colors 
-                            ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
-                            : 'bg-white/5 border-white/10 text-white/40'
-                        }`}
-                      >
-                        <span className="text-xs font-bold uppercase tracking-widest">Habilitar Cores</span>
-                      </button>
-                      {formData.allow_colors && (
-                        <input
-                          value={formData.colors}
-                          onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:border-white/30 transition-all outline-none"
-                          placeholder="Azul, Vermelho, Preto..."
-                        />
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Personalização</label>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, allow_personalization: !formData.allow_personalization })}
-                        className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                          formData.allow_personalization 
-                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500' 
-                            : 'bg-white/5 border-white/10 text-white/40'
-                        }`}
-                      >
-                        <span className="text-xs font-bold uppercase tracking-widest">Habilitar</span>
-                      </button>
-                      {formData.allow_personalization && (
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">Preço Extra (R$)</label>
-                          <input
-                            value={formData.personalization_price}
-                            onChange={(e) => {
-                              const digits = e.target.value.replace(/\D/g, '');
-                              const amount = (parseInt(digits || '0') / 100).toFixed(2);
-                              const [integer, decimal] = amount.split('.');
-                              const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                              setFormData({ ...formData, personalization_price: `${formattedInteger},${decimal}` });
-                            }}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:border-white/30 transition-all outline-none"
-                            placeholder="0,00"
-                          />
-                        </div>
-                      )}
                     </div>
                   </div>
 
