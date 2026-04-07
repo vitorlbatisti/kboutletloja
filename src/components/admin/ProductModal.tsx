@@ -228,7 +228,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         onClick={() => setFormData({ ...formData, is_kids_kit: !formData.is_kids_kit, sizes: '' })}
                         className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
                           formData.is_kids_kit 
-                            ? 'bg-white/10 border-white/50 text-white' 
+                            ? 'bg-purple-500/10 border-purple-500/50 text-purple-500' 
                             : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
                         }`}
                       >
@@ -290,12 +290,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         type="button"
                         onClick={() => setFormData({ ...formData, allow_personalization: !formData.allow_personalization })}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.allow_personalization ? 'bg-white' : 'bg-white/10'
+                          formData.allow_personalization ? 'bg-purple-500' : 'bg-white/10'
                         }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                            formData.allow_personalization ? 'translate-x-6 bg-black' : 'translate-x-1 bg-white'
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            formData.allow_personalization ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
                       </button>

@@ -70,7 +70,7 @@ export const CategoryTab: React.FC<CategoryTabProps> = ({
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white group-hover:text-white/80 transition-colors">{c.name}</h3>
+                <h3 className="text-xl font-bold text-white group-hover:text-white transition-colors">{c.name}</h3>
                 <p className="text-sm text-white/40 mt-1">
                   {subcategories.filter(s => s.category_id === c.id).length} Subcategorias
                 </p>

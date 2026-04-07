@@ -45,7 +45,8 @@ export const ProductTab: React.FC<ProductTabProps> = ({
             animate={{ opacity: 1, x: 0 }}
             className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 backdrop-blur-sm flex items-center p-4 gap-6"
           >
-            <div className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+            {/* Image Container - Smaller */}
+            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
               <img
                 src={p.image_url}
                 alt={p.name}
@@ -65,47 +66,60 @@ export const ProductTab: React.FC<ProductTabProps> = ({
               </div>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-white/80 transition-colors truncate">{p.name}</h3>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    <span className="text-[10px] px-2 py-0.5 bg-white/10 rounded-full text-white/60 font-medium border border-white/5">
-                      {getCategoryName(p.category_id || '')}
-                    </span>
-                    {p.subcategory_id && (
-                      <span className="text-[10px] px-2 py-0.5 bg-white/5 rounded-full text-white/40 font-medium border border-white/10">
-                        {getSubCategoryName(p.subcategory_id)}
-                      </span>
-                    )}
-                  </div>
+            {/* Content Container */}
+            <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-white transition-colors truncate">
+                    {p.name}
+                  </h3>
+                  <span className="hidden md:inline-block text-xl font-bebas text-white/40">
+                    R$ {p.price.toFixed(2).replace('.', ',')}
+                  </span>
                 </div>
-                <div className="text-right">
-                  <span className="text-xl font-bebas text-white/90">R$ {p.price.toFixed(2).replace('.', ',')}</span>
-                  <div className="mt-1 flex flex-wrap justify-end gap-1">
-                    {p.sizes.map(size => (
-                      <span key={size} className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded border border-white/10 text-white/30">
-                        {size}
-                      </span>
-                    ))}
-                  </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-[10px] px-2 py-0.5 bg-white/10 rounded-full text-white/60 font-medium border border-white/5">
+                    {getCategoryName(p.category_id || '')}
+                  </span>
+                  {p.subcategory_id && (
+                    <span className="text-[10px] px-2 py-0.5 bg-white/10 rounded-full text-white/60 font-medium border border-white/5">
+                      {getSubCategoryName(p.subcategory_id)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {p.sizes.map(size => (
+                    <span key={size} className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded border border-white/10 text-white/30">
+                      {size}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => onEdit(p)}
-                className="bg-white/5 text-white/60 p-3 rounded-xl hover:bg-white hover:text-black transition-all duration-300 border border-white/10"
-              >
-                <Edit2 size={18} />
-              </button>
-              <button
-                onClick={() => onDelete(p.id)}
-                className="bg-red-500/10 text-red-500 p-3 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex items-center justify-between md:justify-end gap-4">
+                <span className="md:hidden text-xl font-bebas text-white/90">
+                  R$ {p.price.toFixed(2).replace('.', ',')}
+                </span>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEdit(p)}
+                    className="bg-white/10 text-white p-2.5 rounded-xl hover:bg-white hover:text-black transition-all duration-300 border border-white/10"
+                    title="Editar"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(p.id)}
+                    className="bg-red-500/10 text-red-500 p-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20"
+                    title="Excluir"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         ))}

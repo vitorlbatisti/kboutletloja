@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { LogOut, RefreshCw, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { LogOut, RefreshCw } from 'lucide-react';
 import { useAdmin } from '../hooks/useAdmin';
 import { useAdminActions } from '../hooks/useAdminActions';
 import { useCategoryActions } from '../hooks/useCategoryActions';
@@ -131,6 +130,7 @@ export const AdminDashboard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto px-4 pt-20 pb-20 relative"
     >
+      <div className="absolute top-0 -left-20 w-96 h-96 glow-purple pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 glow-red pointer-events-none" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4 relative z-10">
@@ -139,13 +139,6 @@ export const AdminDashboard = () => {
           <p className="text-muted mt-1 sm:text-base text-sm font-medium">Gerencie seus produtos e categorias</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
-          <Link
-            to="/"
-            className="flex items-center gap-2 bg-white/5 text-white/60 px-6 py-3 rounded-xl hover:bg-white/10 hover:text-white transition-all duration-300 font-bold border border-white/10"
-          >
-            <Home size={20} />
-            Home
-          </Link>
           <button
             onClick={() => loadDashboardData()}
             className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-all"
