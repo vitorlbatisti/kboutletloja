@@ -13,8 +13,6 @@ import { ProductModal } from '../components/admin/ProductModal';
 import { CategoryModal } from '../components/admin/CategoryModal';
 import { DeleteConfirmModal } from '../components/admin/DeleteConfirmModal';
 import { Product, Category, Order } from '../types';
-import { productService } from '../services/productService';
-import { orderService } from '../services/orderService';
 import { supabase } from '../lib/supabase';
 
 export const AdminDashboard = () => {
@@ -53,7 +51,7 @@ export const AdminDashboard = () => {
       description: p.description,
       sizes: p.sizes.join(', '),
       image_url: p.image_url,
-      imagens_adicionais: p.imagens_adicionais || [],
+      additional_images: p.additional_images || [],
       category_id: p.category_id || '',
       subcategory_id: p.subcategory_id || '',
       featured: p.featured || false,
@@ -66,8 +64,8 @@ export const AdminDashboard = () => {
     });
     productActions.setImagePreview(p.image_url);
     productActions.setAdditionalImagePreviews([
-      (p.imagens_adicionais && p.imagens_adicionais[0]) || null,
-      (p.imagens_adicionais && p.imagens_adicionais[1]) || null
+      (p.additional_images && p.additional_images[0]) || null,
+      (p.additional_images && p.additional_images[1]) || null
     ]);
     productActions.setIsModalOpen(true);
   };
@@ -92,17 +90,14 @@ export const AdminDashboard = () => {
     if (!itemToDelete) return;
     const { id, type } = itemToDelete;
     try {
-      if (type === 'order') {
-        await orderService.deleteOrder(id);
-      } else {
-        let table = '';
-        if (type === 'product') table = 'products';
-        else if (type === 'category') table = 'categories';
-        else if (type === 'subcategory') table = 'subcategories';
+      let table = '';
+      if (type === 'product') table = 'products';
+      else if (type === 'category') table = 'categories';
+      else if (type === 'order') table = 'orders';
+      else if (type === 'subcategory') table = 'subcategories';
 
-        const { error } = await supabase.from(table).delete().eq('id', id);
-        if (error) throw error;
-      }
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
       
       loadDashboardData();
       setIsDeleteModalOpen(false);
@@ -114,7 +109,8 @@ export const AdminDashboard = () => {
 
   const handleUpdateOrderStatus = async (id: string, status: Order['status']) => {
     try {
-      await orderService.updateOrderStatus(id, status);
+      const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+      if (error) throw error;
       loadDashboardData();
     } catch (err: any) {
       alert('Erro ao atualizar status: ' + err.message);
@@ -135,7 +131,6 @@ export const AdminDashboard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto px-4 pt-20 pb-20 relative"
     >
-      <div className="absolute top-0 -left-20 w-96 h-96 glow-white pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 glow-red pointer-events-none" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4 relative z-10">
@@ -146,10 +141,10 @@ export const AdminDashboard = () => {
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
           <Link
             to="/"
-            className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-all"
-            title="Ir para a loja"
+            className="flex items-center gap-2 bg-white/5 text-white/60 px-6 py-3 rounded-xl hover:bg-white/10 hover:text-white transition-all duration-300 font-bold border border-white/10"
           >
             <Home size={20} />
+            Home
           </Link>
           <button
             onClick={() => loadDashboardData()}
@@ -220,7 +215,11 @@ export const AdminDashboard = () => {
             productActions.setImagePreview(URL.createObjectURL(e.target.files[0]));
           }
         }}
-        onRemoveMainImage={productActions.handleRemoveMainImage}
+        onRemoveImage={() => {
+          productActions.setImageFile(null);
+          productActions.setImagePreview(null);
+          productActions.setFormData({ ...productActions.formData, image_url: '' });
+        }}
         additionalImagePreviews={productActions.additionalImagePreviews}
         onAdditionalFileChange={(index, e) => {
           if (e.target.files && e.target.files[0]) {
@@ -237,8 +236,27 @@ export const AdminDashboard = () => {
             });
           }
         }}
-        onRemoveAdditionalImage={productActions.handleRemoveAdditionalImage}
-        onPriceChange={(e) => productActions.handlePriceChange(e.target.value)}
+        onRemoveAdditionalImage={(index) => {
+          productActions.setAdditionalImageFiles(prev => {
+            const next = [...prev];
+            next[index] = null;
+            return next;
+          });
+          productActions.setAdditionalImagePreviews(prev => {
+            const next = [...prev];
+            next[index] = null;
+            return next;
+          });
+          productActions.setFormData(prev => {
+            const nextAdditional = [...prev.additional_images];
+            nextAdditional[index] = '';
+            return { ...prev, additional_images: nextAdditional };
+          });
+        }}
+        onPriceChange={(e) => {
+          const field = (e.target as HTMLInputElement).getAttribute('data-field') as 'price' | 'personalization_price' || 'price';
+          productActions.handlePriceChange(e.target.value, field);
+        }}
         onToggleSize={productActions.toggleSize}
       />
 

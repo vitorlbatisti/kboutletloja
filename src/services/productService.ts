@@ -8,7 +8,7 @@ const mapProduct = (p: any): Product => ({
   description: p.descricao,
   sizes: p.tamanhos || [],
   image_url: p.imagem_url,
-  additional_images: p.imagens_adicionais || [],
+  imagens_adicionais: p.imagens_adicionais || [],
   category_id: p.categoria_id,
   subcategory_id: p.subcategory_id, // Might be null if not in DB
   featured: p.destaque,
@@ -28,7 +28,7 @@ const mapProductToDB = (p: Partial<Product>) => {
   if (p.description !== undefined) db.descricao = p.description;
   if (p.sizes !== undefined) db.tamanhos = p.sizes;
   if (p.image_url !== undefined) db.imagem_url = p.image_url;
-  if (p.additional_images !== undefined) db.imagens_adicionais = p.additional_images;
+  if (p.imagens_adicionais !== undefined) db.imagens_adicionais = p.imagens_adicionais;
   if (p.category_id !== undefined) db.categoria_id = p.category_id;
   if (p.subcategory_id !== undefined) db.subcategory_id = p.subcategory_id;
   if (p.featured !== undefined) db.destaque = p.featured;
