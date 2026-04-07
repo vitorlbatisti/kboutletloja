@@ -36,74 +36,76 @@ export const ProductTab: React.FC<ProductTabProps> = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-4">
         {products.map((p) => (
           <motion.div
             key={p.id}
             layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 backdrop-blur-sm"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500 backdrop-blur-sm flex items-center p-4 gap-6"
           >
-            <div className="relative aspect-square overflow-hidden">
+            <div className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
               <img
                 src={p.image_url}
                 alt={p.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="absolute top-4 right-4 flex flex-col gap-2">
+              <div className="absolute top-1 right-1 flex flex-col gap-1">
                 {p.featured && (
-                  <div className="bg-yellow-500 text-black p-2 rounded-full shadow-lg" title="Destaque">
-                    <Star size={16} fill="currentColor" />
+                  <div className="bg-yellow-500 text-black p-1 rounded-full shadow-lg" title="Destaque">
+                    <Star size={10} fill="currentColor" />
                   </div>
                 )}
                 {p.fast_delivery && (
-                  <div className="bg-green-500 text-white p-2 rounded-full shadow-lg" title="Entrega Rápida">
-                    <Truck size={16} />
+                  <div className="bg-green-500 text-white p-1 rounded-full shadow-lg" title="Entrega Rápida">
+                    <Truck size={10} />
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="absolute bottom-4 left-4 right-4 translate-y-10 group-hover:translate-y-0 transition-transform duration-500 flex justify-center gap-3">
-                <button
-                  onClick={() => onEdit(p)}
-                  className="bg-white text-black p-3 rounded-xl hover:scale-110 transition-all duration-300 shadow-xl"
-                >
-                  <Edit2 size={20} />
-                </button>
-                <button
-                  onClick={() => onDelete(p.id)}
-                  className="bg-red-500 text-white p-3 rounded-xl hover:scale-110 transition-all duration-300 shadow-xl"
-                >
-                  <Trash2 size={20} />
-                </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-bold text-white group-hover:text-white/80 transition-colors truncate">{p.name}</h3>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    <span className="text-[10px] px-2 py-0.5 bg-white/10 rounded-full text-white/60 font-medium border border-white/5">
+                      {getCategoryName(p.category_id || '')}
+                    </span>
+                    {p.subcategory_id && (
+                      <span className="text-[10px] px-2 py-0.5 bg-white/5 rounded-full text-white/40 font-medium border border-white/10">
+                        {getSubCategoryName(p.subcategory_id)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bebas text-white/90">R$ {p.price.toFixed(2).replace('.', ',')}</span>
+                  <div className="mt-1 flex flex-wrap justify-end gap-1">
+                    {p.sizes.map(size => (
+                      <span key={size} className="text-[9px] px-1.5 py-0.5 bg-white/5 rounded border border-white/10 text-white/30">
+                        {size}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">{p.name}</h3>
-                <span className="text-xl font-bebas text-white/90">R$ {p.price.toFixed(2).replace('.', ',')}</span>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className="text-xs px-3 py-1 bg-white/10 rounded-full text-white/60 font-medium border border-white/5">
-                  {getCategoryName(p.category_id || '')}
-                </span>
-                {p.subcategory_id && (
-                  <span className="text-xs px-3 py-1 bg-purple-500/20 rounded-full text-purple-300 font-medium border border-purple-500/20">
-                    {getSubCategoryName(p.subcategory_id)}
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 flex flex-wrap gap-1">
-                {p.sizes.map(size => (
-                  <span key={size} className="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-white/40">
-                    {size}
-                  </span>
-                ))}
-              </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(p)}
+                className="bg-white/5 text-white/60 p-3 rounded-xl hover:bg-white hover:text-black transition-all duration-300 border border-white/10"
+              >
+                <Edit2 size={18} />
+              </button>
+              <button
+                onClick={() => onDelete(p.id)}
+                className="bg-red-500/10 text-red-500 p-3 rounded-xl hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20"
+              >
+                <Trash2 size={18} />
+              </button>
             </div>
           </motion.div>
         ))}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { LogOut, RefreshCw, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAdmin } from '../hooks/useAdmin';
 import { useAdminActions } from '../hooks/useAdminActions';
 import { useCategoryActions } from '../hooks/useCategoryActions';
@@ -130,7 +131,6 @@ export const AdminDashboard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto px-4 pt-20 pb-20 relative"
     >
-      <div className="absolute top-0 -left-20 w-96 h-96 glow-purple pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 glow-red pointer-events-none" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4 relative z-10">
@@ -139,6 +139,13 @@ export const AdminDashboard = () => {
           <p className="text-muted mt-1 sm:text-base text-sm font-medium">Gerencie seus produtos e categorias</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+          <Link
+            to="/"
+            className="flex items-center gap-2 bg-white/5 text-white/60 px-6 py-3 rounded-xl hover:bg-white/10 hover:text-white transition-all duration-300 font-bold border border-white/10"
+          >
+            <Home size={20} />
+            Home
+          </Link>
           <button
             onClick={() => loadDashboardData()}
             className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition-all"
@@ -208,6 +215,11 @@ export const AdminDashboard = () => {
             productActions.setImagePreview(URL.createObjectURL(e.target.files[0]));
           }
         }}
+        onRemoveImage={() => {
+          productActions.setImageFile(null);
+          productActions.setImagePreview(null);
+          productActions.setFormData({ ...productActions.formData, image_url: '' });
+        }}
         additionalImagePreviews={productActions.additionalImagePreviews}
         onAdditionalFileChange={(index, e) => {
           if (e.target.files && e.target.files[0]) {
@@ -235,8 +247,16 @@ export const AdminDashboard = () => {
             next[index] = null;
             return next;
           });
+          productActions.setFormData(prev => {
+            const nextAdditional = [...prev.additional_images];
+            nextAdditional[index] = '';
+            return { ...prev, additional_images: nextAdditional };
+          });
         }}
-        onPriceChange={(e) => productActions.handlePriceChange(e.target.value)}
+        onPriceChange={(e) => {
+          const field = (e.target as HTMLInputElement).getAttribute('data-field') as 'price' | 'personalization_price' || 'price';
+          productActions.handlePriceChange(e.target.value, field);
+        }}
         onToggleSize={productActions.toggleSize}
       />
 

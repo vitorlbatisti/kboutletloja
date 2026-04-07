@@ -20,7 +20,7 @@ export interface Product {
   description: string;
   sizes: string[];
   image_url: string;
-  additional_images?: string[];
+  imagens_adicionais?: string[];
   category_id?: string;
   subcategory_id?: string;
   featured?: boolean;

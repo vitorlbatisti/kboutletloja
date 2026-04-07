@@ -17,7 +17,7 @@ export const useAdminActions = (onSuccess: () => void) => {
     description: '',
     sizes: '',
     image_url: '',
-    additional_images: [] as string[],
+    imagens_adicionais: [] as string[],
     category_id: '',
     subcategory_id: '',
     featured: false,
@@ -38,6 +38,30 @@ export const useAdminActions = (onSuccess: () => void) => {
     setImagePreview(null);
     setAdditionalImageFiles([null, null]);
     setAdditionalImagePreviews([null, null]);
+  };
+
+  const handleRemoveMainImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
+
+  const handleRemoveAdditionalImage = (index: number) => {
+    setAdditionalImageFiles(prev => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setAdditionalImagePreviews(prev => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setFormData(prev => {
+      const nextImages = [...prev.imagens_adicionais];
+      nextImages[index] = '';
+      return { ...prev, imagens_adicionais: nextImages };
+    });
   };
 
   const handlePriceChange = (value: string, field: 'price' | 'personalization_price' = 'price') => {
@@ -90,7 +114,7 @@ export const useAdminActions = (onSuccess: () => void) => {
         finalImageUrl = publicUrl;
       }
 
-      const finalAdditionalImageUrls = [...formData.additional_images];
+      const finalAdditionalImageUrls = [...formData.imagens_adicionais];
       for (let i = 0; i < additionalImageFiles.length; i++) {
         const file = additionalImageFiles[i];
         if (file) {
@@ -118,7 +142,7 @@ export const useAdminActions = (onSuccess: () => void) => {
         description: formData.description.trim(),
         sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s !== ''),
         image_url: finalImageUrl,
-        additional_images: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
+        imagens_adicionais: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
         category_id: formData.category_id || null,
         subcategory_id: formData.subcategory_id || null,
         featured: formData.featured,
@@ -166,6 +190,8 @@ export const useAdminActions = (onSuccess: () => void) => {
     handlePriceChange,
     toggleSize,
     handleSaveProduct,
-    resetForm
+    resetForm,
+    handleRemoveMainImage,
+    handleRemoveAdditionalImage
   };
 };
