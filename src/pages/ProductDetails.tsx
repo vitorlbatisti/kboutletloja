@@ -71,7 +71,7 @@ export const ProductDetails = () => {
             />
           </div>
 
-          {product.additional_images && product.additional_images.length > 0 && (
+          {product.images && product.images.length > 0 && (
             <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setActiveImage(product.image_url)}
@@ -81,7 +81,7 @@ export const ProductDetails = () => {
               >
                 <img src={product.image_url} alt="Principal" className="w-full h-full object-cover" />
               </button>
-              {product.additional_images.map((img, idx) => (
+              {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(img)}

@@ -22,6 +22,7 @@ export const AdminDashboard = () => {
     subcategories,
     orders,
     loading,
+    error,
     activeTab,
     setActiveTab,
     loadDashboardData,
@@ -51,7 +52,7 @@ export const AdminDashboard = () => {
       description: p.description,
       sizes: p.sizes.join(', '),
       image_url: p.image_url,
-      additional_images: p.additional_images || [],
+      images: p.images || [],
       category_id: p.category_id || '',
       subcategory_id: p.subcategory_id || '',
       featured: p.featured || false,
@@ -64,8 +65,8 @@ export const AdminDashboard = () => {
     });
     productActions.setImagePreview(p.image_url);
     productActions.setAdditionalImagePreviews([
-      (p.additional_images && p.additional_images[0]) || null,
-      (p.additional_images && p.additional_images[1]) || null
+      (p.images && p.images[0]) || null,
+      (p.images && p.images[1]) || null
     ]);
     productActions.setIsModalOpen(true);
   };
@@ -165,6 +166,18 @@ export const AdminDashboard = () => {
 
       <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
+      {error && (
+        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-medium flex items-center justify-between">
+          <span>{error}</span>
+          <button 
+            onClick={() => loadDashboardData()}
+            className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      )}
+
       {activeTab === 'products' && (
         <ProductTab
           products={products}
@@ -205,7 +218,8 @@ export const AdminDashboard = () => {
         formData={productActions.formData}
         setFormData={productActions.setFormData}
         categories={categories}
-        subcategories={subcategories}
+        subcategories={productActions.localSubcategories}
+        loadingSubcategories={productActions.loadingSubcategories}
         uploading={productActions.uploading}
         onSave={productActions.handleSaveProduct}
         imagePreview={productActions.imagePreview}
@@ -248,9 +262,9 @@ export const AdminDashboard = () => {
             return next;
           });
           productActions.setFormData(prev => {
-            const nextAdditional = [...prev.additional_images];
+            const nextAdditional = [...prev.images];
             nextAdditional[index] = '';
-            return { ...prev, additional_images: nextAdditional };
+            return { ...prev, images: nextAdditional };
           });
         }}
         onPriceChange={(e) => {

@@ -24,6 +24,7 @@ interface ProductModalProps {
   onRemoveAdditionalImage: (index: number) => void;
   onPriceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onToggleSize: (size: string) => void;
+  loadingSubcategories?: boolean;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -43,7 +44,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onAdditionalFileChange,
   onRemoveAdditionalImage,
   onPriceChange,
-  onToggleSize
+  onToggleSize,
+  loadingSubcategories = false
 }) => {
   return (
     <AnimatePresence>
@@ -198,14 +200,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.subcategory_id}
                       onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-all outline-none appearance-none"
-                      disabled={!formData.category_id}
+                      disabled={!formData.category_id || loadingSubcategories}
                     >
-                      <option value="" className="bg-zinc-900">Selecione...</option>
-                      {subcategories
-                        .filter(s => s.category_id === formData.category_id)
-                        .map((s) => (
-                          <option key={s.id} value={s.id} className="bg-zinc-900">{s.name}</option>
-                        ))}
+                      <option value="" className="bg-zinc-900">
+                        {loadingSubcategories ? 'Carregando...' : 'Selecione...'}
+                      </option>
+                      {subcategories.map((s) => (
+                        <option key={s.id} value={s.id} className="bg-zinc-900">{s.name}</option>
+                      ))}
                     </select>
                   </div>
 

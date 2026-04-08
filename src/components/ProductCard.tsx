@@ -23,7 +23,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         {product.fast_delivery && (
           <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-white text-black text-[8px] font-black uppercase tracking-widest rounded-md flex items-center gap-1 shadow-xl">
             <Truck size={10} />
-            <span>Fast Delivery</span>
+            <span>Entrega Rápida</span>
           </div>
         )}
 

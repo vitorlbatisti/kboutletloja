@@ -10,6 +10,7 @@ export const useCatalog = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
 
@@ -18,6 +19,7 @@ export const useCatalog = () => {
   const featuredOnly = searchParams.get('featured') === 'true';
 
   const fetchData = useCallback(async () => {
+    setError(null);
     try {
       const [catData, subData] = await Promise.all([
         categoryService.getCategories(),
@@ -25,8 +27,9 @@ export const useCatalog = () => {
       ]);
       setCategories(catData);
       setSubcategories(subData);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching categories:', err);
+      setError(err.message || 'Erro ao carregar categorias');
     }
   }, []);
 
@@ -78,6 +81,7 @@ export const useCatalog = () => {
     categories,
     subcategories,
     loading,
+    error,
     searchTerm,
     setSearchTerm,
     sortBy,

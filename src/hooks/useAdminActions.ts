@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product, Category, SubCategory } from '../types';
+import { categoryService } from '../services/categoryService';
 
 export const useAdminActions = (onSuccess: () => void) => {
   const [uploading, setUploading] = useState(false);
@@ -17,7 +18,7 @@ export const useAdminActions = (onSuccess: () => void) => {
     description: '',
     sizes: '',
     image_url: '',
-    imagens_adicionais: [] as string[],
+    images: [] as string[],
     category_id: '',
     subcategory_id: '',
     featured: false,
@@ -30,9 +31,32 @@ export const useAdminActions = (onSuccess: () => void) => {
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [localSubcategories, setLocalSubcategories] = useState<SubCategory[]>([]);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+
+  const fetchSubcategories = React.useCallback(async (categoryId: string) => {
+    if (!categoryId) {
+      setLocalSubcategories([]);
+      return;
+    }
+    setLoadingSubcategories(true);
+    try {
+      const data = await categoryService.getSubcategories(categoryId);
+      setLocalSubcategories(data);
+    } catch (err) {
+      console.error('Error fetching subcategories:', err);
+    } finally {
+      setLoadingSubcategories(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchSubcategories(formData.category_id);
+  }, [formData.category_id, fetchSubcategories]);
 
   const resetForm = () => {
     setFormData(initialFormData);
+    setLocalSubcategories([]);
     setEditingId(null);
     setImageFile(null);
     setImagePreview(null);
@@ -58,9 +82,9 @@ export const useAdminActions = (onSuccess: () => void) => {
       return next;
     });
     setFormData(prev => {
-      const nextImages = [...prev.imagens_adicionais];
+      const nextImages = [...prev.images];
       nextImages[index] = '';
-      return { ...prev, imagens_adicionais: nextImages };
+      return { ...prev, images: nextImages };
     });
   };
 
@@ -114,7 +138,7 @@ export const useAdminActions = (onSuccess: () => void) => {
         finalImageUrl = publicUrl;
       }
 
-      const finalAdditionalImageUrls = [...formData.imagens_adicionais];
+      const finalAdditionalImageUrls = [...formData.images];
       for (let i = 0; i < additionalImageFiles.length; i++) {
         const file = additionalImageFiles[i];
         if (file) {
@@ -142,7 +166,7 @@ export const useAdminActions = (onSuccess: () => void) => {
         description: formData.description.trim(),
         sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s !== ''),
         image_url: finalImageUrl,
-        additional_images: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
+        images: finalAdditionalImageUrls.filter(url => url && url.trim() !== ''),
         category_id: formData.category_id || null,
         subcategory_id: formData.subcategory_id || null,
         featured: formData.featured,
@@ -192,6 +216,8 @@ export const useAdminActions = (onSuccess: () => void) => {
     handleSaveProduct,
     resetForm,
     handleRemoveMainImage,
-    handleRemoveAdditionalImage
+    handleRemoveAdditionalImage,
+    localSubcategories,
+    loadingSubcategories
   };
 };

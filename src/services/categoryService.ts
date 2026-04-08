@@ -13,19 +13,20 @@ export const categoryService = {
     return (data || []) as Category[];
   },
 
-  async getSubcategories() {
-    try {
-      const { data, error } = await supabase
-        .from('subcategories')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return (data || []) as SubCategory[];
-    } catch (e) {
-      console.warn('Subcategories table not found, returning empty array');
-      return [];
+  async getSubcategories(categoryId?: string) {
+    let query = supabase
+      .from('subcategories')
+      .select('*')
+      .order('name');
+    
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
     }
+
+    const { data, error } = await query;
+    
+    if (error) throw error;
+    return (data || []) as SubCategory[];
   },
 
   async createCategory(category: Omit<Category, 'id' | 'created_at' | 'subcategories'>) {

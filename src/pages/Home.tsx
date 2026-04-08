@@ -6,10 +6,23 @@ import { useHome } from '../hooks/useHome';
 import { ProductCard } from '../components/ProductCard';
 
 export const Home = () => {
-  const { featuredProducts, loading } = useHome();
+  const { featuredProducts, loading, error, loadHomeData } = useHome();
 
   return (
     <div className="bg-black text-white min-h-screen">
+      {error && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+          <div className="bg-red-500/90 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl flex items-center justify-between gap-4">
+            <p className="text-sm font-bold">{error}</p>
+            <button 
+              onClick={() => loadHomeData()}
+              className="px-3 py-1 bg-white text-red-500 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-white/90 transition-all"
+            >
+              Recarregar
+            </button>
+          </div>
+        </div>
+      )}
       {/* Hero Section */}
       <section className="relative min-h-screen md:h-[90vh] flex items-center overflow-hidden pt-32">
         {/* Background Image (Absolute) */}

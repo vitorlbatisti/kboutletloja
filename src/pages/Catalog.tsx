@@ -16,7 +16,8 @@ export const Catalog = () => {
     setSortBy,
     activeCategory,
     activeSubCategory,
-    setSearchParams
+    setSearchParams,
+    error
   } = useCatalog();
 
   const activeCategoryData = categories.find(c => c.id === activeCategory);
@@ -24,6 +25,17 @@ export const Catalog = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-40 md:pt-48 pb-32">
+      {error && (
+        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-medium flex items-center justify-between">
+          <span>{error}</span>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      )}
       {/* Header & Search */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
         <div className="max-w-2xl">

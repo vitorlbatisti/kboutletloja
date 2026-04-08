@@ -13,10 +13,12 @@ export const useAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'orders'>('products');
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const loadDashboardData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
+    setError(null);
     try {
       const [prodRes, catRes, subRes, orderRes] = await Promise.allSettled([
         productService.getProducts(),
@@ -30,15 +32,13 @@ export const useAdmin = () => {
       if (subRes.status === 'fulfilled') setSubcategories(subRes.value);
       if (orderRes.status === 'fulfilled') setOrders(orderRes.value);
 
-      // Log errors for failed requests
-      [prodRes, catRes, subRes, orderRes].forEach((res, i) => {
-        if (res.status === 'rejected') {
-          const names = ['Products', 'Categories', 'Subcategories', 'Orders'];
-          console.error(`Error loading ${names[i]}:`, res.reason);
-        }
-      });
+      // Check for critical failures
+      if (prodRes.status === 'rejected') {
+        throw new Error('Falha ao carregar produtos: ' + prodRes.reason.message);
+      }
     } catch (err: any) {
       console.error('Error loading dashboard data:', err);
+      setError(err.message || 'Erro ao carregar dados do dashboard');
     } finally {
       setLoading(false);
     }
@@ -59,6 +59,7 @@ export const useAdmin = () => {
     subcategories,
     orders,
     loading,
+    error,
     activeTab,
     setActiveTab,
     loadDashboardData,
