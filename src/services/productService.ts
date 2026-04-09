@@ -1,14 +1,48 @@
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 
+const parseArray = (val: any): string[] => {
+  if (Array.isArray(val)) return val;
+  if (!val) return [];
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed === '') return [];
+    
+    // Handle Postgres array format: {val1,val2}
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      return trimmed.substring(1, trimmed.length - 1)
+        .split(',')
+        .map(s => s.trim().replace(/^"|"$/g, ''))
+        .filter(s => s !== '');
+    }
+    
+    // Handle JSON array format: ["val1","val2"]
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      // Not JSON
+    }
+    
+    // If it's a comma separated string
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map(s => s.trim()).filter(s => s !== '');
+    }
+    
+    // It's a single string
+    return [trimmed];
+  }
+  return [];
+};
+
 const mapProduct = (p: any): Product => ({
   id: p.id,
   name: p.name,
   price: Number(p.price),
   description: p.description,
-  sizes: p.sizes || [],
+  sizes: parseArray(p.sizes),
   image_url: p.image_url,
-  images: Array.isArray(p.images) ? p.images : (Array.isArray(p.imagens_adicionais) ? p.imagens_adicionais : []),
+  images: parseArray(p.images || p.imagens_adicionais),
   category_id: p.category_id,
   subcategory_id: p.subcategory_id,
   featured: p.featured,
@@ -16,7 +50,7 @@ const mapProduct = (p: any): Product => ({
   personalization_price: Number(p.personalization_price || 0),
   fast_delivery: p.fast_delivery,
   allow_colors: p.allow_colors,
-  colors: p.colors || [],
+  colors: parseArray(p.colors),
   is_kids_kit: p.is_kids_kit,
   created_at: p.created_at
 });

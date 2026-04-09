@@ -123,7 +123,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden bg-white/5 border-2 border-dashed border-white/10 hover:border-white/30 transition-all cursor-pointer">
                         {preview ? (
                           <>
-                            <img src={preview} alt={`Extra ${idx}`} className="w-full h-full object-cover" />
+                            <img src={preview} alt={`Miniatura ${idx}`} className="w-full h-full object-cover" />
                             <button
                               type="button"
                               onClick={(e) => { 

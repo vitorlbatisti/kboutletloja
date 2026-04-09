@@ -52,7 +52,7 @@ export const AdminDashboard = () => {
       description: p.description,
       sizes: p.sizes.join(', '),
       image_url: p.image_url,
-      images: p.images || [],
+      images: Array.isArray(p.images) ? p.images : [],
       category_id: p.category_id || '',
       subcategory_id: p.subcategory_id || '',
       featured: p.featured || false,
@@ -96,6 +96,45 @@ export const AdminDashboard = () => {
       else if (type === 'category') table = 'categories';
       else if (type === 'order') table = 'orders';
       else if (type === 'subcategory') table = 'subcategories';
+
+      // If deleting a product, also delete its images from storage
+      if (type === 'product') {
+        const { data: product } = await supabase
+          .from('products')
+          .select('image_url, images')
+          .eq('id', id)
+          .single();
+        
+        if (product) {
+          const urls = [product.image_url, ...(product.images || [])].filter(Boolean);
+          const paths = urls
+            .map(url => {
+              if (!url || !url.includes('/public/products/')) return null;
+              return url.split('/public/products/').pop();
+            })
+            .filter(Boolean) as string[];
+          
+          if (paths.length > 0) {
+            await supabase.storage.from('products').remove(paths);
+          }
+        }
+      }
+
+      // If deleting a category, also delete its image from storage
+      if (type === 'category') {
+        const { data: category } = await supabase
+          .from('categories')
+          .select('image_url')
+          .eq('id', id)
+          .single();
+        
+        if (category && category.image_url) {
+          const path = category.image_url.split('/public/categories/').pop();
+          if (path) {
+            await supabase.storage.from('categories').remove([path]);
+          }
+        }
+      }
 
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;

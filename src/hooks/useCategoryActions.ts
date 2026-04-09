@@ -11,6 +11,8 @@ export const useCategoryActions = (onSuccess: () => void) => {
   const [catImagePreview, setCatImagePreview] = useState<string | null>(null);
   const [newSubCatName, setNewSubCatName] = useState('');
   
+  const [catImageToDelete, setCatImageToDelete] = useState<string | null>(null);
+  
   const initialCatFormData = { name: '', image_url: '', subcategories: [] as string[] };
   const [catFormData, setCatFormData] = useState(initialCatFormData);
 
@@ -20,6 +22,24 @@ export const useCategoryActions = (onSuccess: () => void) => {
     setCatImageFile(null);
     setCatImagePreview(null);
     setNewSubCatName('');
+    setCatImageToDelete(null);
+  };
+
+  const extractPathFromUrl = (url: string) => {
+    if (!url || !url.includes('/public/categories/')) return null;
+    return url.split('/public/categories/').pop();
+  };
+
+  const deleteFileFromStorage = async (url: string) => {
+    const path = extractPathFromUrl(url);
+    if (!path) return;
+    
+    try {
+      const { error } = await supabase.storage.from('categories').remove([path]);
+      if (error) console.error('Error deleting category image from storage:', error);
+    } catch (err) {
+      console.error('Error in deleteFileFromStorage:', err);
+    }
   };
 
   const handleSaveCategory = async (e: React.FormEvent) => {
@@ -30,6 +50,11 @@ export const useCategoryActions = (onSuccess: () => void) => {
       let finalImageUrl = catFormData.image_url;
 
       if (catImageFile) {
+        // If we're uploading a new image, mark the old one for deletion
+        if (catFormData.image_url) {
+          setCatImageToDelete(catFormData.image_url);
+        }
+
         const fileExt = catImageFile.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -58,6 +83,11 @@ export const useCategoryActions = (onSuccess: () => void) => {
 
       if (editingCatId) {
         await categoryService.updateCategory(editingCatId, payload);
+        
+        // After successful update, delete old image if replaced
+        if (catImageToDelete) {
+          await deleteFileFromStorage(catImageToDelete);
+        }
       } else {
         const data = await categoryService.createCategory(payload);
         categoryId = data.id;

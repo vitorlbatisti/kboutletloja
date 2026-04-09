@@ -127,6 +127,17 @@ DROP POLICY IF EXISTS "Public read access for produtos" ON products;
 DROP POLICY IF EXISTS "Admin full access for produtos" ON products;
 DROP POLICY IF EXISTS "Admin full access for pedidos_v1" ON orders;
 DROP POLICY IF EXISTS "Public create access for pedidos_v1" ON orders;
+DROP POLICY IF EXISTS "Public read access for categories" ON categories;
+DROP POLICY IF EXISTS "Admin full access for categories" ON categories;
+DROP POLICY IF EXISTS "Public read access for subcategories" ON subcategories;
+DROP POLICY IF EXISTS "Admin full access for subcategories" ON subcategories;
+DROP POLICY IF EXISTS "Public read access for products" ON products;
+DROP POLICY IF EXISTS "Admin full access for products" ON products;
+DROP POLICY IF EXISTS "Admin full access for orders" ON orders;
+DROP POLICY IF EXISTS "Public create access for orders" ON orders;
+DROP POLICY IF EXISTS "Public Access for Products" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Upload Access for Products" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Delete Access for Products" ON storage.objects;
 
 -- Create new policies
 CREATE POLICY "Public read access for categories" ON categories FOR SELECT USING (true);
@@ -140,3 +151,25 @@ CREATE POLICY "Admin full access for products" ON products FOR ALL TO authentica
 
 CREATE POLICY "Admin full access for orders" ON orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Public create access for orders" ON orders FOR INSERT TO public WITH CHECK (true);
+
+-- 7. Storage Buckets for Images
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('products', 'products', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow public access to read images
+CREATE POLICY "Public Access for Products"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'products' );
+
+-- Allow authenticated users to upload images
+CREATE POLICY "Admin Upload Access for Products"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'products' );
+
+-- Allow authenticated users to delete images
+CREATE POLICY "Admin Delete Access for Products"
+ON storage.objects FOR DELETE
+TO authenticated
+USING ( bucket_id = 'products' );

@@ -23,6 +23,9 @@ export const ProductDetails = () => {
     handleAddToCart
   } = useProductDetails();
 
+  console.log('Product images:', product?.images);
+  console.log('Active image:', activeImage);
+
   if (loading) return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-36 md:pt-48 pb-32 animate-pulse">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
@@ -71,29 +74,44 @@ export const ProductDetails = () => {
             />
           </div>
 
-          {product.images && product.images.filter(img => img && img.trim() !== '').length > 0 && (
-            <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveImage(product.image_url)}
-                className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                  activeImage === product.image_url ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
-                }`}
-              >
-                <img src={product.image_url} alt="Principal" className="w-full h-full object-cover" />
-              </button>
-              {product.images.filter(img => img && img.trim() !== '').map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImage(img)}
-                  className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                    activeImage === img ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img} alt={`Extra ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Galeria de Miniaturas */}
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Sempre mostrar a imagem principal como primeira miniatura */}
+            <button
+              onClick={() => setActiveImage(product.image_url)}
+              className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                activeImage === product.image_url ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
+              }`}
+            >
+              <img src={product.image_url} alt="Imagem Principal" className="w-full h-full object-cover" />
+            </button>
+
+            {/* Mostrar imagens adicionais, filtrando se forem iguais à principal */}
+            {product.images && product.images
+              .filter(img => img && typeof img === 'string' && img.trim() !== '' && img !== product.image_url)
+              .map((img, idx) => {
+                console.log(`Rendering additional image ${idx}:`, img);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(img)}
+                    className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                      activeImage === img ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
+                    }`}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`Galeria ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error(`Failed to load image: ${img}`);
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Erro+Imagem';
+                      }}
+                    />
+                  </button>
+                );
+              })}
+          </div>
         </motion.div>
 
         <motion.div 

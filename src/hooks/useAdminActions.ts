@@ -12,6 +12,8 @@ export const useAdminActions = (onSuccess: () => void) => {
   const [additionalImageFiles, setAdditionalImageFiles] = useState<(File | null)[]>([null, null]);
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState<(string | null)[]>([null, null]);
   
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
+  
   const initialFormData = {
     name: '',
     price: '',
@@ -62,15 +64,40 @@ export const useAdminActions = (onSuccess: () => void) => {
     setImagePreview(null);
     setAdditionalImageFiles([null, null]);
     setAdditionalImagePreviews([null, null]);
+    setImagesToDelete([]);
+  };
+
+  const extractPathFromUrl = (url: string) => {
+    if (!url || !url.includes('/public/products/')) return null;
+    return url.split('/public/products/').pop();
+  };
+
+  const deleteFilesFromStorage = async (urls: string[]) => {
+    const paths = urls.map(url => extractPathFromUrl(url)).filter(Boolean) as string[];
+    if (paths.length === 0) return;
+    
+    try {
+      const { error } = await supabase.storage.from('products').remove(paths);
+      if (error) console.error('Error deleting files from storage:', error);
+    } catch (err) {
+      console.error('Error in deleteFilesFromStorage:', err);
+    }
   };
 
   const handleRemoveMainImage = () => {
+    if (formData.image_url) {
+      setImagesToDelete(prev => [...prev, formData.image_url]);
+    }
     setImageFile(null);
     setImagePreview(null);
     setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
   const handleRemoveAdditionalImage = (index: number) => {
+    const imageUrl = formData.images[index];
+    if (imageUrl) {
+      setImagesToDelete(prev => [...prev, imageUrl]);
+    }
     setAdditionalImageFiles(prev => {
       const next = [...prev];
       next[index] = null;
@@ -121,8 +148,14 @@ export const useAdminActions = (onSuccess: () => void) => {
       }
 
       let finalImageUrl = formData.image_url;
+      const currentImagesToDelete = [...imagesToDelete];
 
       if (imageFile) {
+        // If we have a new file and there was an old URL, mark it for deletion
+        if (formData.image_url) {
+          currentImagesToDelete.push(formData.image_url);
+        }
+
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -142,6 +175,11 @@ export const useAdminActions = (onSuccess: () => void) => {
       for (let i = 0; i < additionalImageFiles.length; i++) {
         const file = additionalImageFiles[i];
         if (file) {
+          // If we have a new additional file and there was an old URL at this index, mark it for deletion
+          if (formData.images[i]) {
+            currentImagesToDelete.push(formData.images[i]);
+          }
+
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}-extra-${i}.${fileExt}`;
           const { error: uploadError } = await supabase.storage
@@ -181,6 +219,11 @@ export const useAdminActions = (onSuccess: () => void) => {
       if (editingId) {
         const { error } = await supabase.from('products').update(payload).eq('id', editingId);
         if (error) throw error;
+        
+        // After successful update, delete images that were removed or replaced
+        if (currentImagesToDelete.length > 0) {
+          await deleteFilesFromStorage(currentImagesToDelete);
+        }
       } else {
         const { error } = await supabase.from('products').insert([payload]);
         if (error) throw error;
