@@ -8,7 +8,7 @@ const mapProduct = (p: any): Product => ({
   description: p.description,
   sizes: p.sizes || [],
   image_url: p.image_url,
-  images: p.images || [],
+  images: Array.isArray(p.images) ? p.images : (Array.isArray(p.imagens_adicionais) ? p.imagens_adicionais : []),
   category_id: p.category_id,
   subcategory_id: p.subcategory_id,
   featured: p.featured,

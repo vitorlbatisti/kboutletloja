@@ -71,22 +71,22 @@ export const ProductDetails = () => {
             />
           </div>
 
-          {product.images && product.images.length > 0 && (
+          {product.images && product.images.filter(img => img && img.trim() !== '').length > 0 && (
             <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setActiveImage(product.image_url)}
                 className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                  activeImage === product.image_url ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'
+                  activeImage === product.image_url ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
                 }`}
               >
                 <img src={product.image_url} alt="Principal" className="w-full h-full object-cover" />
               </button>
-              {product.images.map((img, idx) => (
+              {product.images.filter(img => img && img.trim() !== '').map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(img)}
                   className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                    activeImage === img ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'
+                    activeImage === img ? 'border-white scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'
                   }`}
                 >
                   <img src={img} alt={`Extra ${idx + 1}`} className="w-full h-full object-cover" />
