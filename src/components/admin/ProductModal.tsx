@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const STANDARD_SIZES = ['P', 'M', 'G', 'GG', 'G1', 'G2', 'G3'];
 const KIDS_SIZES = ['2 anos', '4 anos', '6 anos', '8 anos', '10 anos', '12 anos'];
+const BOOTS_SIZES = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -47,6 +48,29 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onToggleSize,
   loadingSubcategories = false
 }) => {
+  const [activeSizeGrid, setActiveSizeGrid] = React.useState<'standard' | 'kids' | 'boots'>('standard');
+
+  React.useEffect(() => {
+    if (formData.is_kids_kit) {
+      setActiveSizeGrid('kids');
+    } else if (formData.sizes.split(',').some((s: string) => BOOTS_SIZES.includes(s.trim()))) {
+      setActiveSizeGrid('boots');
+    } else {
+      setActiveSizeGrid('standard');
+    }
+  }, [formData.is_kids_kit, isOpen]);
+
+  const handleGridSwitch = (gridId: 'standard' | 'kids' | 'boots') => {
+    setActiveSizeGrid(gridId);
+    setFormData({ 
+      ...formData, 
+      is_kids_kit: gridId === 'kids',
+      sizes: '' 
+    });
+  };
+
+  const currentSizes = activeSizeGrid === 'kids' ? KIDS_SIZES : (activeSizeGrid === 'boots' ? BOOTS_SIZES : STANDARD_SIZES);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -223,22 +247,31 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between ml-1">
+                    <div className="flex flex-col gap-3 ml-1">
                       <label className="text-xs font-bold uppercase tracking-widest text-white/40">Tamanhos Disponíveis</label>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, is_kids_kit: !formData.is_kids_kit, sizes: '' })}
-                        className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
-                          formData.is_kids_kit 
-                            ? 'bg-white/10 border-white/50 text-white' 
-                            : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
-                        }`}
-                      >
-                        Kit Infantil
-                      </button>
+                      <div className="flex gap-2">
+                        {[
+                          { id: 'standard', label: 'Roupas' },
+                          { id: 'kids', label: 'Infantil' },
+                          { id: 'boots', label: 'Chuteiras' }
+                        ].map((grid) => (
+                          <button
+                            key={grid.id}
+                            type="button"
+                            onClick={() => handleGridSwitch(grid.id as any)}
+                            className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${
+                              activeSizeGrid === grid.id
+                                ? 'bg-white text-black border-white' 
+                                : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
+                            }`}
+                          >
+                            {grid.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {(formData.is_kids_kit ? KIDS_SIZES : STANDARD_SIZES).map((size) => (
+                      {currentSizes.map((size) => (
                         <button
                           key={size}
                           type="button"
