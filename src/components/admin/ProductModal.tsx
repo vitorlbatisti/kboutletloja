@@ -251,9 +251,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <label className="text-xs font-bold uppercase tracking-widest text-white/40">Tamanhos Disponíveis</label>
                       <div className="flex gap-2">
                         {[
-                          { id: 'standard', label: 'Roupas' },
+                          { id: 'standard', label: 'Padrão' },
                           { id: 'kids', label: 'Infantil' },
-                          { id: 'boots', label: 'Chuteiras' }
+                          { id: 'boots', label: 'Numeração' }
                         ].map((grid) => (
                           <button
                             key={grid.id}
