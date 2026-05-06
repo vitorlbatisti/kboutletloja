@@ -105,8 +105,27 @@ h3 { font-size: 24px; line-height: 1.2; }
   100% { transform: translateY(0px); }
 }
 
+@keyframes slow-zoom {
+  0% { transform: scale(1.05); }
+  100% { transform: scale(1.15); }
+}
+
+@keyframes scroll-down {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 30s ease-in-out alternate infinite;
+}
+
+.animate-scroll-down {
+  animation: scroll-down 2s ease-in-out infinite;
 }
 
 .gradient-bg {

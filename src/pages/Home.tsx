@@ -24,55 +24,94 @@ export const Home = () => {
         </div>
       )}
       {/* Hero Section */}
-      <section className="relative min-h-screen md:h-[90vh] flex items-center overflow-hidden pt-32">
+      <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
         {/* Background Image (Absolute) */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 scale-105 animate-slow-zoom">
           <img 
-            src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1974&auto=format&fit=crop" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover grayscale opacity-30"
+            src="https://images.unsplash.com/photo-1617251137884-f135eccf6942?q=80&w=1964&auto=format&fit=crop" 
+            alt="KB Outlet Premium Streetwear" 
+            className="w-full h-full object-cover object-center sm:object-top"
           />
-          {/* Dark Overlay (Absolute) */}
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+          {/* Overlays for Depth and Readability */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+          {/* Vignette effect */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-80" />
         </div>
 
         {/* Content (Relative) */}
-        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-12 md:py-0">
-          <div className="flex flex-col items-center justify-center text-center">
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-20 mt-16 md:mt-24">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             {/* Text Content */}
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="max-w-3xl"
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-4xl"
             >
-              <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold tracking-[0.3em] uppercase text-white/80 mb-6">
-                KB OUTLET • PREMIUM STREETWEAR
-              </span>
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-bebas leading-[0.85] tracking-tighter mb-8">
-                ESTILO <br /> SEM LIMITES.
+              <div className="overflow-hidden mb-6">
+                <motion.span 
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="inline-block px-4 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold tracking-[0.3em] uppercase text-white/90"
+                >
+                  KB OUTLET • EST. 2024
+                </motion.span>
+              </div>
+              
+              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] font-bebas leading-[0.85] tracking-tighter mb-8 drop-shadow-2xl">
+                <span className="block text-white">NÃO SIGA TENDÊNCIAS.</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">CRIE PRESENÇA.</span>
               </h1>
-              <p className="text-muted text-lg md:text-xl font-medium mb-10 max-w-lg mx-auto">
-                Curadoria exclusiva das melhores marcas e peças outlet premium para quem não aceita o comum.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+              
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.4 }}
+                className="text-white/80 text-lg md:text-2xl font-light tracking-wide mb-12 max-w-2xl md:ml-2"
+              >
+                Streetwear premium para quem transforma presença em identidade.
+              </motion.p>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:ml-2"
+              >
                 <Link 
                   to="/catalogo" 
-                  className="w-full sm:w-auto px-10 py-4 bg-white text-black font-black text-sm uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-2xl"
+                  className="group relative px-10 py-4 bg-white text-black font-black text-sm uppercase tracking-widest overflow-hidden font-mono flex items-center justify-center gap-3 transition-transform hover:scale-105 active:scale-95"
                 >
-                  Explorar catálogo
+                  <span className="relative z-10">Explorar catálogo</span>
+                  <div className="absolute inset-0 bg-neutral-200 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
+                  <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link 
                   to="/catalogo?featured=true" 
-                  className="w-full sm:w-auto px-10 py-4 bg-transparent text-white border border-white/20 font-black text-sm uppercase tracking-widest rounded-xl hover:bg-white/5 transition-all"
+                  className="group px-10 py-4 bg-black/20 backdrop-blur-sm text-white border border-white/20 font-black text-sm uppercase tracking-widest hover:bg-white border-transparent hover:border-white hover:text-black transition-all duration-300 ease-in-out font-mono text-center flex items-center justify-center"
                 >
                   Ver novidades
                 </Link>
-              </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+        >
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/40">Scroll</span>
+          <div className="w-[1px] h-12 bg-white/20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-white animate-scroll-down" />
+          </div>
+        </motion.div>
       </section>
 
       {/* Featured Products Grid */}
